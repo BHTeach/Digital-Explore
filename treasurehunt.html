@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>British Hills Treasure Hunt</title>
-    <!-- Tailwind CSS for styling -->
+    <title>British Hills Treasure Hunt | The Elite</title>
+    <!-- Tailwind CSS for layout -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons (UMD) -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -13,20 +13,33 @@
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
         
-        body { font-family: 'Inter', sans-serif; }
-        .font-serif { font-family: 'Playfair+Display', serif; }
+        :root {
+            --racing-green: #064e3b;
+            --pale-mint: #f0fdf4;
+            --gold-accent: #d4af37;
+        }
+
+        body { 
+            font-family: 'Lora', serif; 
+            background-color: var(--racing-green);
+            color: var(--pale-mint);
+        }
+        
+        h1, h2, h3, .font-serif { 
+            font-family: 'Playfair+Display', serif; 
+        }
 
         .scanner-line {
             width: 100%;
             height: 2px;
-            background: #4ade80;
+            background: var(--pale-mint);
             position: absolute;
             top: 0;
             left: 0;
-            box-shadow: 0 0 10px #4ade80;
-            animation: scan 2s infinite linear;
+            box-shadow: 0 0 15px var(--pale-mint);
+            animation: scan 2.5s infinite ease-in-out;
         }
         @keyframes scan {
             0% { top: 0; }
@@ -37,78 +50,115 @@
         .stage { display: none; min-height: 100vh; }
         .stage.active { display: flex; flex-direction: column; }
         
+        .elite-card {
+            background: rgba(240, 253, 244, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(240, 253, 244, 0.1);
+            border-radius: 1.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--pale-mint);
+            color: var(--racing-green);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(240, 253, 244, 0.3);
+            color: var(--pale-mint);
+            transition: all 0.3s ease;
+        }
+
         /* Smooth transitions for feedback */
         .feedback-toast {
             transform: translateY(-100%);
-            transition: transform 0.3s ease-out;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .feedback-toast.show {
             transform: translateY(0);
         }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--racing-green);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(240, 253, 244, 0.2);
+            border-radius: 10px;
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-white overflow-x-hidden">
+<body class="overflow-x-hidden">
 
     <!-- Error Toast -->
-    <div id="error-toast" class="fixed top-4 left-4 right-4 z-[100] bg-red-600/90 text-white p-4 rounded-xl shadow-lg flex items-center justify-between backdrop-blur-sm hidden">
+    <div id="error-toast" class="fixed top-4 left-4 right-4 z-[100] bg-red-900/90 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between backdrop-blur-md border border-red-500/30 hidden">
         <div class="flex items-center">
-            <i data-lucide="alert-triangle" class="mr-3"></i>
-            <span id="error-msg" class="text-sm font-medium"></span>
+            <i data-lucide="shield-alert" class="mr-3 w-6 h-6"></i>
+            <span id="error-msg" class="text-sm font-medium italic"></span>
         </div>
-        <button onclick="hideError()" class="ml-4 font-bold px-3 py-1 bg-red-800 rounded-lg">Dismiss</button>
+        <button onclick="hideError()" class="ml-4 font-bold px-4 py-1 bg-red-800/50 rounded-lg hover:bg-red-700">Dismiss</button>
     </div>
 
     <!-- Quiz Feedback Toast -->
-    <div id="quiz-feedback" class="fixed top-4 left-4 right-4 z-[100] p-4 rounded-xl shadow-lg flex items-center backdrop-blur-sm font-medium feedback-toast">
-        <i id="feedback-icon" class="mr-3"></i>
-        <span id="feedback-text"></span>
+    <div id="quiz-feedback" class="fixed top-4 left-4 right-4 z-[100] p-5 rounded-2xl shadow-2xl flex items-center backdrop-blur-md font-medium feedback-toast border">
+        <i id="feedback-icon" class="mr-3 w-6 h-6"></i>
+        <span id="feedback-text" class="italic"></span>
     </div>
 
     <!-- Intro Stage -->
-    <div id="stage-intro" class="stage active items-center justify-center p-6 text-center bg-gradient-to-b from-slate-900 to-slate-800">
-        <div class="mb-6 w-56 h-56 flex items-center justify-center">
-            <i data-lucide="castle" class="text-yellow-500 w-24 h-24 drop-shadow-lg"></i>
+    <div id="stage-intro" class="stage active items-center justify-center p-8 text-center bg-gradient-to-b from-[#064e3b] to-[#043327]">
+        <div class="mb-10 w-64 h-64 flex items-center justify-center relative">
+            <div class="absolute inset-0 bg-[#f0fdf4]/5 rounded-full animate-pulse"></div>
+            <!-- Main Logo -->
+            <img src="assets/logo.png" alt="British Hills Logo" class="relative z-10 w-48 h-auto drop-shadow-[0_0_15px_rgba(240,253,244,0.3)]" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
+            <i id="fallback-icon" data-lucide="library" class="hidden text-[#f0fdf4] w-28 h-28 drop-shadow-[0_0_15px_rgba(240,253,244,0.3)]"></i>
         </div>
-        <h1 class="text-4xl font-bold mb-4 font-serif text-yellow-500">British Hills<br/><span class="text-3xl text-white font-sans">Treasure Hunt</span></h1>
-        <p class="text-slate-300 mb-8 max-w-md text-lg">
+        <h1 class="text-5xl font-bold mb-4 text-[#f0fdf4] tracking-tight">British Hills</h1>
+        <p class="text-lg md:text-xl font-serif italic text-[#f0fdf4]/70 mb-10 tracking-wide max-w-md">
             Explore British Hills, scan objects, answer questions, and win!
         </p>
         
-        <div id="loading-ai" class="flex items-center text-slate-400 bg-slate-800/50 py-3 px-6 rounded-full">
-            <i data-lucide="loader-2" class="animate-spin mr-3 text-yellow-500"></i>
-            Loading AI Scanner...
+        <div id="loading-ai" class="flex items-center text-[#f0fdf4]/50 bg-white/5 py-4 px-8 rounded-full border border-white/10 italic">
+            <i data-lucide="scroll" class="animate-bounce mr-3 text-[#f0fdf4]"></i>
+            Preparing your credentials...
         </div>
 
-        <div id="action-buttons" class="hidden flex flex-col gap-4 w-full max-w-xs">
-            <!-- Normal Start Button -->
-            <button id="start-btn" onclick="startNewGame()" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-yellow-600/20 transition-transform transform hover:scale-105 text-lg">
-                Start the Hunt
+        <div id="action-buttons" class="hidden flex flex-col gap-5 w-full max-w-xs">
+            <button id="start-btn" onclick="startNewGame()" class="btn-primary font-bold py-5 px-10 rounded-full text-xl uppercase tracking-widest shadow-xl">
+                Begin Hunt
             </button>
             
-            <!-- Continue Button (Hidden by default) -->
-            <button id="continue-btn" onclick="continueGame()" class="hidden bg-slate-700 hover:bg-slate-600 text-yellow-400 font-bold py-4 px-8 rounded-full border border-yellow-600/30 transition-transform transform hover:scale-105 text-lg flex items-center justify-center">
-                <i data-lucide="play" class="mr-2 w-5 h-5"></i> Continue Progress
+            <button id="continue-btn" onclick="continueGame()" class="hidden btn-secondary font-semibold py-4 px-8 rounded-full italic flex items-center justify-center bg-white/5">
+                <i data-lucide="bookmark" class="mr-2 w-5 h-5"></i> Resume Expedition
             </button>
         </div>
     </div>
 
     <!-- Clue Stage -->
-    <div id="stage-clue" class="stage p-6">
-        <div class="flex justify-between items-center mb-6 text-slate-400 font-medium">
-            <span id="clue-progress">Clue 1 of 7</span>
-            <span class="text-yellow-500 uppercase text-xs font-bold tracking-widest">Find this!</span>
+    <div id="stage-clue" class="stage p-8">
+        <div class="flex justify-between items-center mb-10 text-[#f0fdf4]/60 font-medium tracking-widest uppercase text-xs">
+            <span id="clue-progress">Discovery I of VII</span>
+            <span class="text-[#f0fdf4] border-b border-[#f0fdf4]/30 pb-1">Observation Required</span>
         </div>
         
-        <div class="bg-slate-800/80 backdrop-blur-md p-8 rounded-2xl shadow-xl mb-8 border border-slate-700 flex-grow flex flex-col justify-center text-center">
-            <h2 class="text-2xl font-bold mb-6 text-yellow-500 flex items-center justify-center">
-                <i data-lucide="scroll-text" class="mr-3 w-6 h-6"></i> Your Next Clue
-            </h2>
-            <p id="clue-hint" class="text-slate-200 text-2xl leading-relaxed italic"></p>
+        <div class="elite-card p-10 flex-grow flex flex-col justify-center text-center shadow-inner">
+            <div class="mb-8 opacity-30 flex justify-center">
+                <i data-lucide="feather" class="w-12 h-12"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-8 text-[#f0fdf4]">The Riddle</h2>
+            <p id="clue-hint" class="text-[#f0fdf4] text-3xl leading-relaxed italic font-serif"></p>
         </div>
 
-        <div class="mt-auto pb-4">
-            <button onclick="startCamera()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-5 px-6 rounded-2xl w-full flex items-center justify-center text-xl shadow-lg">
-                <i data-lucide="camera" class="mr-3"></i> I Found It!
+        <div class="mt-10 pb-6">
+            <button onclick="startCamera()" class="btn-primary font-bold py-6 px-8 rounded-2xl w-full flex items-center justify-center text-xl shadow-2xl">
+                <i data-lucide="camera" class="mr-4 w-7 h-7"></i> I Found It!
             </button>
         </div>
     </div>
@@ -116,55 +166,69 @@
     <!-- Scanner Stage -->
     <div id="stage-scanner" class="stage bg-black">
         <div class="relative flex-grow overflow-hidden">
-            <video id="webcam" autoPlay playsInline muted class="absolute inset-0 w-full h-full object-cover"></video>
-            <div class="absolute inset-0 border-[12px] border-transparent pointer-events-none" style="border-image: linear-gradient(to bottom right, #3b82f6 0%, transparent 40%, transparent 60%, #3b82f6 100%) 1"></div>
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 h-56 border-2 border-dashed border-white/50 rounded-xl pointer-events-none flex items-end justify-center pb-2">
+            <video id="webcam" autoPlay playsInline muted class="absolute inset-0 w-full h-full object-cover opacity-80"></video>
+            
+            <!-- Elegant Frame Overlay -->
+            <div class="absolute inset-0 border-[20px] border-[#064e3b]/40 pointer-events-none"></div>
+            
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-[#f0fdf4]/40 rounded-3xl pointer-events-none flex items-end justify-center pb-4">
                 <div id="scan-line" class="scanner-line hidden"></div>
+                <div class="text-[10px] uppercase tracking-[0.3em] text-[#f0fdf4]/40">Optical Analysis</div>
             </div>
-            <!-- AI Indicator -->
-            <div id="ai-label-container" class="absolute top-4 left-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs p-2 rounded-lg text-center border border-slate-700 font-mono hidden">
-                AI Sees: <span id="ai-prediction" class="text-yellow-400">Loading...</span>
+
+            <div id="ai-label-container" class="absolute top-8 left-8 right-8 bg-[#064e3b]/80 backdrop-blur-xl text-[#f0fdf4] text-xs p-3 rounded-xl text-center border border-[#f0fdf4]/20 font-mono hidden">
+                <span class="opacity-50">SENSORS:</span> <span id="ai-prediction" class="font-bold">INITIALIZING</span>
             </div>
-            <div id="scan-success-overlay" class="absolute inset-0 bg-green-500/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 hidden">
-                <i data-lucide="check-circle" class="text-white w-20 h-20 mb-4 animate-bounce"></i>
-                <h2 class="text-3xl font-bold text-white">Target Found!</h2>
+
+            <div id="scan-success-overlay" class="absolute inset-0 bg-[#064e3b]/95 backdrop-blur-md flex flex-col items-center justify-center z-50 hidden">
+                <div class="p-8 rounded-full border-2 border-[#f0fdf4] mb-6">
+                    <i data-lucide="check" class="text-[#f0fdf4] w-16 h-16"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-[#f0fdf4] italic">Discovery Verified</h2>
             </div>
         </div>
-        <div class="p-6 bg-slate-900 rounded-t-3xl pb-8 border-t border-slate-800 z-20">
-            <p class="text-center text-slate-400 mb-6 font-medium">Point your camera at the target and tap analyze.</p>
-            <div class="flex flex-col space-y-3">
+
+        <div class="p-8 bg-[#064e3b] rounded-t-[3rem] pb-10 border-t border-[#f0fdf4]/10 z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+            <p class="text-center text-[#f0fdf4]/60 mb-8 font-serif italic text-lg">Position the subject within the frame for verification.</p>
+            <div class="flex flex-col space-y-4">
                 <div class="flex space-x-4">
-                    <button id="cancel-scan" onclick="stopCameraAndReturn()" class="bg-slate-800 text-slate-300 font-bold py-4 px-4 rounded-xl flex-1">Cancel</button>
-                    <button id="scan-btn" onclick="toggleScanning()" class="bg-green-600 text-white font-bold py-4 px-4 rounded-xl flex-[2]">Analyze Object</button>
+                    <button id="cancel-scan" onclick="stopCameraAndReturn()" class="bg-[#f0fdf4]/5 text-[#f0fdf4]/70 font-semibold py-5 px-6 rounded-2xl flex-1 border border-white/5">Abort</button>
+                    <button id="scan-btn" onclick="toggleScanning()" class="btn-primary font-bold py-5 px-6 rounded-2xl flex-[2] shadow-xl">Start Analysis</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Quiz Stage -->
-    <div id="stage-quiz" class="stage p-6 bg-slate-900">
-        <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-green-400 mb-2">Location Found!</h2>
-            <div id="quiz-location-name" class="text-yellow-500 font-serif text-2xl font-bold"></div>
+    <div id="stage-quiz" class="stage p-8 bg-[#064e3b]">
+        <div class="text-center mb-10">
+            <p class="text-[#f0fdf4]/40 uppercase tracking-[0.4em] text-[10px] mb-2 font-bold">Inquisition</p>
+            <h2 class="text-4xl font-bold text-[#f0fdf4] mb-2">Knowledge Check</h2>
+            <div id="quiz-location-name" class="text-[#f0fdf4]/70 font-serif italic text-xl"></div>
         </div>
 
-        <div class="bg-slate-800/80 p-8 rounded-2xl shadow-xl border border-slate-700 mb-6 flex-grow flex flex-col">
-            <p class="text-slate-400 text-sm mb-4 uppercase tracking-widest font-bold">Challenge Question</p>
-            <h3 id="quiz-question" class="text-2xl font-bold mb-8 text-slate-100 leading-snug"></h3>
+        <div class="elite-card p-10 shadow-2xl border border-[#f0fdf4]/10 mb-8 flex-grow flex flex-col">
+            <div class="h-px w-12 bg-[#f0fdf4]/30 mb-8"></div>
+            <h3 id="quiz-question" class="text-2xl font-bold mb-10 text-[#f0fdf4] leading-relaxed font-serif"></h3>
             <div id="quiz-options" class="space-y-4"></div>
         </div>
     </div>
 
     <!-- Success Stage -->
-    <div id="stage-success" class="stage items-center justify-center p-6 text-center bg-gradient-to-b from-green-900/40 to-slate-900">
-        <i data-lucide="trophy" class="text-yellow-400 w-24 h-24 mb-8 animate-pulse"></i>
-        <h1 class="text-4xl font-bold mb-4 font-serif">Congratulations!</h1>
-        <p class="text-slate-300 mb-8 text-lg max-w-md">You've successfully completed the British Hills Treasure Hunt!</p>
-        <div class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 w-full max-w-sm mb-8">
-            <p class="text-yellow-500 font-bold mb-2">Claim Your Reward</p>
-            <p class="text-slate-400 text-sm">Show this screen to the reception desk to prove your accomplishment!</p>
+    <div id="stage-success" class="stage items-center justify-center p-8 text-center bg-gradient-to-b from-[#043327] to-[#064e3b]">
+        <div class="mb-12 relative">
+            <div class="absolute inset-0 scale-150 blur-3xl bg-[#f0fdf4]/10 rounded-full"></div>
+            <i data-lucide="award" class="text-[#f0fdf4] w-32 h-32 relative z-10 drop-shadow-[0_0_20px_rgba(240,253,244,0.4)]"></i>
         </div>
-        <button onclick="resetGame()" class="bg-transparent border-2 border-slate-600 text-slate-300 py-3 px-8 rounded-full">Play Again (Reset)</button>
+        <h1 class="text-5xl font-bold mb-6 italic font-serif">Expedition Complete</h1>
+        <p class="text-[#f0fdf4]/70 mb-12 text-xl max-w-md leading-relaxed">Your scholarly pursuits have led you to the ultimate truth of the British Hills.</p>
+        
+        <div class="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-[#f0fdf4]/10 w-full max-w-sm mb-12 shadow-2xl">
+            <p class="text-[#f0fdf4] font-bold text-xl mb-3 tracking-widest uppercase text-xs">Final Credentials</p>
+            <p class="text-[#f0fdf4]/60 text-lg italic">Please present this digital seal to the Proctor at the Reception Desk.</p>
+        </div>
+        
+        <button onclick="resetGame()" class="text-[#f0fdf4]/40 hover:text-[#f0fdf4] transition-colors border-b border-transparent hover:border-[#f0fdf4]/20 pb-1 italic">Restart Expedition</button>
     </div>
 
     <script>
@@ -172,71 +236,71 @@
         const huntData = [
             {
                 id: 1, name: "The Post Box", tmClassName: "Post Box",
-                hint: "I am bright red and stand proudly, waiting to swallow your messages.",
+                hint: "I wait in crimson, waiting to transport messages across the land.",
                 quiz: {
-                    question: "Whose royal cypher (initials) is cast into the metal?",
-                    options: ["VR (Victoria Regina)", "GR (George Rex)", "ER (Elizabeth Regina)", "CR (Charles Rex)"],
-                    correctAnswer: "ER (Elizabeth Regina)"
+                    question: "Whose royal initials are written on this vessel?",
+                    options: ["Victoria Regina", "George Rex", "Elizabeth Regina", "Charles Rex"],
+                    correctAnswer: "Elizabeth Regina"
                 }
             },
             {
                 id: 2, name: "Shakespeare's Statue", tmClassName: "Shakespeare",
-                hint: "To be, or not to be... Seek the famous man of words thinking quietly.",
+                hint: "The writer sits atop of his seat, thinking about his next creation.",
                 quiz: {
-                    question: "What is Shakespeare holding?",
-                    options: ["A quill and parchment", "A skull", "A book", "Nothing"],
+                    question: "Examine the statue; what is he holding?",
+                    options: ["A quill and parchment", "A scholar's skull", "A hardcover tome", "Nothing at all"],
                     correctAnswer: "A quill and parchment"
                 }
             },
             {
                 id: 3, name: "The Stained Glass Window", tmClassName: "Window",
-                hint: "When the sun shines, I paint the floor with colours. Look up!",
+                hint: "A kaleidoscope of light, where glass captures many colours.",
                 quiz: {
-                    question: "What kind of tree is shown on this window?",
-                    options: ["Willow Tree", "Cherry Blossom Tree", "Christmas Tree", "Oak Tree"],
-                    correctAnswer: "Oak Tree"
+                    question: "What tree is on the coat-of-arms?",
+                    options: ["The Weeping Willow", "The Cherry Blossom", "The Oak", "The Pine"],
+                    correctAnswer: "The Oak"
                 }
             },
             {
                 id: 4, name: "The Ascot", tmClassName: "The Ascot",
-                hint: "Inside I provide delicious snacks for a peaceful afternoon.",
+                hint: "A place to relax and enjoy a mid-afternoon snack.",
                 quiz: {
-                    question: "A traditional afternoon tea offers what kind of sandwiches?",
-                    options: ["Roast Beef", "Cucumber", "Peanut Butter", "Tuna Mayo"],
+                    question: "In afternoon tea, which sandwich is often served?",
+                    options: ["Roast Beef", "Cucumber", "Peanut Butter", "Tuna and Mayonnaise"],
                     correctAnswer: "Cucumber"
                 }
             },
             {
                 id: 5, name: "The Garden Shed", tmClassName: "Shed",
-                hint: "Where tools rest and seeds wait. I protect them from the weather.",
+                hint: "A shelter for the tools and materials, in front of the man who discovered gravity.",
                 quiz: {
-                    question: "What guest house is closest to this shed?",
+                    question: "Which guest house is nearest this shed?",
                     options: ["Newton", "Chaucer", "Turner", "The Barracks"],
                     correctAnswer: "Newton"
                 }
             },
             {
                 id: 6, name: "Turner", tmClassName: "Turner",
-                hint: "Of all the guesthouses, only I am this colour? Am I embarrassed?",
+                hint: "I wear a colour unique among the guest houses; perhaps I am shy, but I seem embarrassed?",
                 quiz: {
-                    question: "What style of building is Turner guesthouse?",
+                    question: "What style is Turner house?",
                     options: ["Tudor", "Victorian", "Georgian", "Modern"],
                     correctAnswer: "Georgian"
                 }
             },
             {
                 id: 7, name: "The Falstaff Pub Sign", tmClassName: "Pub Sign",
-                hint: "A sign of a good time for people who want to enjoy a drink.",
+                hint: "A sign for those who want a drink and chat.",
                 quiz: {
-                    question: "What is Sir John Falstaff holding in his hand?",
-                    options: ["A tankard of ale", "A wooden pipe", "A sword", "A turkey leg"],
+                    question: "In the sign, what is Sir John Falstaff holding?",
+                    options: ["A tankard of ale", "A pipe of tobacco", "A rusted broadsword", "A roasted bird"],
                     correctAnswer: "A tankard of ale"
                 }
             }
         ];
 
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/jdknW0HDJ/";
-        const STORAGE_KEY = "british_hills_hunt_progress";
+        const STORAGE_KEY = "british_hills_hunt_elite_progress";
         let model, webcam, maxPredictions;
         let currentIndex = 0;
         let isScanning = false;
@@ -249,14 +313,13 @@
         function showStage(stageId) {
             document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
             document.getElementById(`stage-${stageId}`).classList.add('active');
+            window.scrollTo(0, 0);
         }
 
-        // Save progress to LocalStorage
         function saveProgress(index) {
             localStorage.setItem(STORAGE_KEY, index);
         }
 
-        // Check for saved progress on startup
         function checkSavedProgress() {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved !== null) {
@@ -296,7 +359,7 @@
                 document.getElementById('action-buttons').classList.remove('hidden');
                 checkSavedProgress();
             } catch (err) {
-                showError("AI Model failed to load. Please check your internet.");
+                showError("The engine failed to initialize. Please check your connection.");
             }
         }
 
@@ -304,7 +367,8 @@
         function goToClue(index) {
             currentIndex = index;
             const data = huntData[currentIndex];
-            document.getElementById('clue-progress').innerText = `Clue ${index + 1} of ${huntData.length}`;
+            const romans = ["I", "II", "III", "IV", "V", "VI", "VII"];
+            document.getElementById('clue-progress').innerText = `Discovery ${romans[index]} of ${romans[huntData.length-1]}`;
             document.getElementById('clue-hint').innerText = data.hint;
             showStage('clue');
         }
@@ -322,7 +386,7 @@
                     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.srcObject = stream;
                 } catch (e) {
-                    showError("Could not access camera.");
+                    showError("Camera sensors are inaccessible.");
                     showStage('clue');
                 }
             }
@@ -344,8 +408,9 @@
 
             if (!isScanning) {
                 isScanning = true;
-                btn.innerText = "Stop Scanning";
-                btn.classList.replace('bg-green-600', 'bg-red-600');
+                btn.innerText = "Halt Analysis";
+                btn.classList.replace('btn-primary', 'bg-red-900');
+                btn.style.color = "white";
                 line.classList.remove('hidden');
                 aiLabel.classList.remove('hidden');
                 startPredictionLoop();
@@ -358,10 +423,10 @@
             isScanning = false;
             clearInterval(scanInterval);
             const btn = document.getElementById('scan-btn');
-            btn.innerText = "Analyze Object";
-            if (btn.classList.contains('bg-red-600')) {
-                btn.classList.replace('bg-red-600', 'bg-green-600');
-            }
+            btn.innerText = "Start Analysis";
+            btn.classList.remove('bg-red-900');
+            btn.classList.add('btn-primary');
+            btn.style.color = "";
             document.getElementById('scan-line').classList.add('hidden');
             document.getElementById('ai-label-container').classList.add('hidden');
         }
@@ -375,10 +440,10 @@
                 const predictions = await model.predict(video);
                 const top = predictions.reduce((prev, current) => (prev.probability > current.probability) ? prev : current);
                 
-                predictionLabel.innerText = `${top.className} (${Math.round(top.probability * 100)}%)`;
-                predictionLabel.className = top.className === target ? "text-green-400 font-bold" : "text-yellow-400";
+                predictionLabel.innerText = `${top.className.toUpperCase()} (${Math.round(top.probability * 100)}% CONFIDENCE)`;
+                predictionLabel.className = top.className === target ? "text-green-400 font-bold" : "text-yellow-200 opacity-80";
 
-                if (top.className === target && top.probability > 0.85) {
+                if (top.className === target && top.probability > 0.88) {
                     handleSuccess();
                 }
             }, 500);
@@ -405,7 +470,7 @@
             
             data.quiz.options.forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "w-full bg-slate-700/50 hover:bg-slate-600 text-left px-6 py-5 rounded-2xl border border-slate-600/50 transition-all text-slate-200 text-lg font-medium shadow-sm active:scale-95";
+                btn.className = "w-full bg-white/5 hover:bg-white/10 text-left px-8 py-5 rounded-2xl border border-white/10 transition-all text-[#f0fdf4] text-lg font-medium shadow-sm active:scale-95";
                 btn.innerText = opt;
                 btn.onclick = () => checkAnswer(opt, data.quiz.correctAnswer);
                 optionsBox.appendChild(btn);
@@ -417,7 +482,6 @@
             if (selected === correct) {
                 showFeedback('success', 'Correct! Well done.');
                 
-                // Save progress for the NEXT clue
                 const nextIndex = currentIndex + 1;
                 saveProgress(nextIndex);
 
@@ -429,7 +493,7 @@
                     }
                 }, 1500);
             } else {
-                showFeedback('error', 'Not quite! Look closer at the object.');
+                showFeedback('error', 'Incorrect. Please look again.');
             }
         }
 
@@ -447,14 +511,14 @@
             const icon = document.getElementById('feedback-icon');
             const label = document.getElementById('feedback-text');
 
-            toast.className = `fixed top-4 left-4 right-4 z-[100] p-4 rounded-xl shadow-lg flex items-center backdrop-blur-sm font-medium feedback-toast show ${type === 'success' ? 'bg-green-600/90 text-white' : 'bg-red-600/90 text-white'}`;
+            toast.className = `fixed top-4 left-4 right-4 z-[100] p-6 rounded-2xl shadow-2xl flex items-center backdrop-blur-md font-medium feedback-toast show ${type === 'success' ? 'bg-[#064e3b] text-[#f0fdf4] border-[#f0fdf4]/20' : 'bg-red-900 text-white border-red-500/20'}`;
             label.innerText = text;
-            icon.setAttribute('data-lucide', type === 'success' ? 'check-circle' : 'alert-triangle');
+            icon.setAttribute('data-lucide', type === 'success' ? 'check-circle' : 'shield-alert');
             lucide.createIcons();
 
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 2000);
+            }, 2500);
         }
 
         // Start App
