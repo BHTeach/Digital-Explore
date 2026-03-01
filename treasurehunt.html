@@ -85,7 +85,7 @@
     <!-- Clue Stage -->
     <div id="stage-clue" class="stage p-6">
         <div class="flex justify-between items-center mb-6 text-slate-400 font-medium">
-            <span id="clue-progress">Clue 1 of 5</span>
+            <span id="clue-progress">Clue 1 of 7</span>
             <span class="text-yellow-500 uppercase text-xs font-bold tracking-widest">Find this!</span>
         </div>
         <div class="relative rounded-2xl overflow-hidden mb-6 border border-slate-700 shadow-2xl bg-black h-64 flex items-center justify-center">
@@ -129,7 +129,6 @@
                 <button id="cancel-scan" onclick="stopCameraAndReturn()" class="bg-slate-800 text-slate-300 font-bold py-4 px-4 rounded-xl flex-1">Cancel</button>
                 <button id="scan-btn" onclick="toggleScanning()" class="bg-green-600 text-white font-bold py-4 px-4 rounded-xl flex-[2]">Analyze Object</button>
             </div>
-            <button onclick="skipToQuiz()" class="mt-6 text-sm text-slate-500 underline w-full text-center">Camera not working? Use Secret Code</button>
         </div>
     </div>
 
@@ -196,7 +195,17 @@
                 }
             },
             {
-                id: 4, name: "The Garden Shed", tmClassName: "Shed",
+                id: 4, name: "The Ascot", tmClassName: "The Ascot",
+                hint: "Inside I provide delicious snacks for a peaceful afternoon.",
+                clueImage: "https://images.unsplash.com/photo-1594631252845-29fc4586c55c?q=80&w=800&auto=format&fit=crop",
+                quiz: {
+                    question: "A traditional afternoon tea offers what kind of sandwiches?",
+                    options: ["Roast Beef", "Cucumber", "Peanut Butter", "Tuna Mayo"],
+                    correctAnswer: "Cucumber"
+                }
+            },
+            {
+                id: 5, name: "The Garden Shed", tmClassName: "Shed",
                 hint: "Where tools rest and seeds wait. I protect them from the weather.",
                 clueImage: "https://images.unsplash.com/photo-1581454649479-0dbf57ea7106?q=80&w=800&auto=format&fit=crop",
                 quiz: {
@@ -206,7 +215,17 @@
                 }
             },
             {
-                id: 5, name: "The Falstaff Pub Sign", tmClassName: "Pub Sign",
+                id: 6, name: "Turner", tmClassName: "Turner",
+                hint: "Of all the guesthouses, only I am this colour? Am I embarrassed?",
+                clueImage: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=800&auto=format&fit=crop",
+                quiz: {
+                    question: "What style of building is Turner guesthouse?",
+                    options: ["Tudor", "Victorian", "Georgian", "Modern"],
+                    correctAnswer: "Georgian"
+                }
+            },
+            {
+                id: 7, name: "The Falstaff Pub Sign", tmClassName: "Pub Sign",
                 hint: "A sign of a good time for people who want to enjoy a drink.",
                 clueImage: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=800&auto=format&fit=crop",
                 quiz: {
@@ -336,12 +355,6 @@
                 document.getElementById('scan-success-overlay').classList.add('hidden');
                 setupQuiz();
             }, 2000);
-        }
-
-        function skipToQuiz() {
-            const video = document.getElementById('webcam');
-            if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-            setupQuiz();
         }
 
         function setupQuiz() {
