@@ -1,308 +1,409 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Castle, EyeOff, ScrollText, Camera, CheckCircle, Trophy, AlertTriangle, Loader2 } from 'lucide-react';
-
-// --- GAME DATA ---
-const huntData = [
-    {
-        id: 1,
-        name: "The Post Box",
-        hint: "I am bright red and stand proudly, waiting to swallow your messages to the outside world.",
-        clueImage: "https://images.unsplash.com/photo-1566351540902-6e2e21b033fa?q=80&w=800&auto=format&fit=crop",
-        tmClassName: "Post Box",
-        quiz: {
-            question: "Look closely at the post box. Whose royal cypher (initials) is cast into the metal?",
-            options: ["VR (Victoria Regina)", "GR (George Rex)", "ER (Elizabeth Regina)", "CR (Charles Rex)"],
-            correctAnswer: "ER (Elizabeth Regina)"
-        }
-    },
-    {
-        id: 2,
-        name: "Shakespeare's Statue",
-        hint: "To be, or not to be... Seek the famous man of words thinking quietly.",
-        clueImage: "https://images.unsplash.com/photo-1588533810088-251f2f01f4e1?q=80&w=800&auto=format&fit=crop", 
-        tmClassName: "Shakespeare",
-        quiz: {
-            question: "Examine the statue closely. What is Shakespeare holding?",
-            options: ["A quill and parchment", "A skull", "A book", "Nothing, his hands are empty"],
-            correctAnswer: "A quill and parchment"
-        }
-    },
-    {
-        id: 3,
-        name: "The Stained Glass Window",
-        hint: "When the sun shines, I paint the floor with colours. Look up to find me.",
-        clueImage: "https://images.unsplash.com/photo-1510168700204-70678f45a75b?q=80&w=800&auto=format&fit=crop", 
-        tmClassName: "Window",
-        quiz: {
-            question: "What kind of tree is shown on this window?",
-            options: ["Willow Tree", "Cherry Blossom Tree", "Christmas Tree", "Oak Tree"],
-            correctAnswer: "Oak Tree"
-        }
-    },
-    {
-        id: 4,
-        name: "The Garden Shed",
-        hint: "Where tools rest and seeds wait. I protect these from the weather.",
-        clueImage: "https://images.unsplash.com/photo-1581454649479-0dbf57ea7106?q=80&w=800&auto=format&fit=crop", 
-        tmClassName: "Shed",
-        quiz: {
-            question: "What guest house is closest to this shed?",
-            options: ["Newton", "Chaucer", "Turner", "The Barracks"],
-            correctAnswer: "Newton"
-        }
-    },
-    {
-        id: 5,
-        name: "The Falstaff Pub Sign",
-        hint: "A sign of a good time for people who want to enjoy a drink and chat.",
-        clueImage: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=800&auto=format&fit=crop", 
-        tmClassName: "Pub Sign",
-        quiz: {
-            question: "Look closely at the painted sign. What is Sir John Falstaff holding in his hand?",
-            options: ["A tankard of ale", "A wooden pipe", "A sword", "A turkey leg"],
-            correctAnswer: "A tankard of ale"
-        }
-    }
-];
-
-const MODEL_URL = "https://teachablemachine.withgoogle.com/models/jdknW0HDJ/";
-
-export default function App() {
-    const [currentStage, setCurrentStage] = useState('intro');
-    const [currentLocationIndex, setCurrentLocationIndex] = useState(0);
-    const [scanning, setScanning] = useState(false);
-    const [scanResult, setScanResult] = useState(null);
-    const [errorMsg, setErrorMsg] = useState('');
-    const [quizFeedback, setQuizFeedback] = useState(null);
-    const [modelLoaded, setModelLoaded] = useState(false);
-    const [currentPrediction, setCurrentPrediction] = useState('');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>British Hills Treasure Hunt</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons (UMD) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- TensorFlow.js and Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     
-    const videoRef = useRef(null);
-    const streamRef = useRef(null);
-    const modelRef = useRef(null);
-    const scanInterval = useRef(null);
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair+Display', serif; }
 
-    const currentLocation = huntData[currentLocationIndex];
-
-    useEffect(() => {
-        const loadAI = async () => {
-            try {
-                if (!window.tf) {
-                    await new Promise(res => {
-                        const s = document.createElement('script');
-                        s.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
-                        s.onload = res;
-                        document.head.appendChild(s);
-                    });
-                }
-                if (!window.tmImage) {
-                    await new Promise(res => {
-                        const s = document.createElement('script');
-                        s.src = "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
-                        s.onload = res;
-                        document.head.appendChild(s);
-                    });
-                }
-                modelRef.current = await window.tmImage.load(MODEL_URL + 'model.json', MODEL_URL + 'metadata.json');
-                setModelLoaded(true);
-            } catch (err) {
-                setErrorMsg("Failed to load AI brain. Check your connection.");
-            }
-        };
-        loadAI();
-        return () => stopCamera();
-    }, []);
-
-    const startCamera = async () => {
-        setErrorMsg('');
-        setCurrentStage('scanner');
-        setScanResult(null);
-        setCurrentPrediction('');
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { exact: "environment" } } 
-            });
-            if (videoRef.current) videoRef.current.srcObject = stream;
-            streamRef.current = stream;
-        } catch (err) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                if(videoRef.current) videoRef.current.srcObject = stream;
-                streamRef.current = stream;
-            } catch (fallbackErr) {
-                setErrorMsg("Camera access failed.");
-                setCurrentStage('clue');
-            }
+        .scanner-line {
+            width: 100%;
+            height: 2px;
+            background: #4ade80;
+            position: absolute;
+            top: 0;
+            left: 0;
+            box-shadow: 0 0 10px #4ade80;
+            animation: scan 2s infinite linear;
         }
-    };
-
-    const stopCamera = () => {
-        stopScanning();
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
         }
-    };
 
-    const startScanning = () => {
-        if (!modelLoaded) return;
-        setScanning(true);
-        scanInterval.current = setInterval(async () => {
-            if (!videoRef.current || !modelRef.current) return;
-            try {
-                const predictions = await modelRef.current.predict(videoRef.current);
-                const topPrediction = predictions.reduce((p, c) => p.probability > c.probability ? p : c);
-                setCurrentPrediction(`${topPrediction.className} (${Math.round(topPrediction.probability * 100)}%)`);
-                if (topPrediction.className === currentLocation.tmClassName && topPrediction.probability > 0.85) {
-                    handleSuccessfulScan();
-                }
-            } catch (err) {}
-        }, 500);
-    };
-    
-    const stopScanning = () => {
-        setScanning(false);
-        if (scanInterval.current) {
-            clearInterval(scanInterval.current);
-            scanInterval.current = null;
+        .stage { display: none; min-height: 100vh; }
+        .stage.active { display: flex; flex-direction: column; }
+        
+        /* Smooth transitions for feedback */
+        .feedback-toast {
+            transform: translateY(-100%);
+            transition: transform 0.3s ease-out;
         }
-    };
+        .feedback-toast.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white overflow-x-hidden">
 
-    const handleSuccessfulScan = () => {
-        stopScanning();
-        setScanResult('success');
-        setTimeout(() => {
-            stopCamera();
-            setCurrentStage('quiz');
-            setScanResult(null);
-        }, 2000);
-    };
-
-    return (
-        <div className="min-h-screen bg-slate-900 text-white font-sans selection:bg-yellow-500/30 overscroll-none">
-            <style>{`.scanner-line { width: 100%; height: 2px; background: #4ade80; position: absolute; top: 0; left: 0; box-shadow: 0 0 10px #4ade80; animation: scan 2s infinite linear; } @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }`}</style>
-            
-            {errorMsg && (
-                <div className="fixed top-4 left-4 right-4 z-50 bg-red-600/90 text-white p-4 rounded-xl shadow-lg flex items-center justify-between backdrop-blur-sm">
-                    <div className="flex items-center"><AlertTriangle className="mr-3 flex-shrink-0" /><span className="text-sm">{errorMsg}</span></div>
-                    <button onClick={() => setErrorMsg('')} className="font-bold px-3 py-1 bg-red-800 rounded-lg hover:bg-red-900 transition-colors ml-4">Dismiss</button>
-                </div>
-            )}
-
-            {currentStage === 'intro' && (
-                <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-gradient-to-b from-slate-900 to-slate-800">
-                    <div className="mb-6 w-56 h-56 flex items-center justify-center">
-                        <img 
-                            src="./assets/logo.png" 
-                            alt="British Hills Logo" 
-                            className="max-w-full max-h-full object-contain drop-shadow-2xl"
-                            onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextElementSibling.style.display = 'block';
-                            }}
-                        />
-                        <Castle size={80} className="text-yellow-500 drop-shadow-lg hidden" />
-                    </div>
-                    <h1 className="text-4xl font-bold mb-4 font-serif text-yellow-500">British Hills<br/><span className="text-3xl text-white">Treasure Hunt</span></h1>
-                    <p className="text-slate-300 mb-8 max-w-md text-lg">
-                        Explore British Hills, scan the locations and objects, answer the questions, and win!
-                    </p>
-                    {!modelLoaded ? (
-                        <div className="flex items-center text-slate-400 bg-slate-800/50 py-3 px-6 rounded-full"><Loader2 className="animate-spin mr-3 text-yellow-500" />Loading AI Scanner...</div>
-                    ) : (
-                        <button onClick={() => setCurrentStage('clue')} className="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-yellow-600/20 transition-transform transform hover:scale-105 text-lg w-full max-w-xs">Start the Hunt</button>
-                    )}
-                </div>
-            )}
-
-            {currentStage === 'clue' && (
-                <div className="flex flex-col min-h-screen p-6">
-                    <div className="flex justify-between items-center mb-6 text-slate-400 font-medium"><span>Clue {currentLocationIndex + 1} of {huntData.length}</span><span className="text-yellow-500 tracking-wider uppercase text-sm font-bold tracking-widest">Find this!</span></div>
-                    <div className="relative rounded-2xl overflow-hidden mb-6 border border-slate-700 shadow-2xl bg-black h-64 flex items-center justify-center group">
-                        <img src={currentLocation.clueImage} alt="Clue" className="w-full h-full object-cover blur-[8px] grayscale opacity-75" />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><EyeOff size={48} className="text-white opacity-50 drop-shadow-md" /></div>
-                    </div>
-                    <div className="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 border border-slate-700">
-                        <h2 className="text-xl font-bold mb-3 text-yellow-500 flex items-center"><ScrollText className="mr-2" size={20} /> Hint</h2>
-                        <p className="text-slate-200 text-lg leading-relaxed">{currentLocation.hint}</p>
-                    </div>
-                    <div className="mt-auto pb-4"><button onClick={startCamera} className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-2xl w-full flex items-center justify-center text-lg shadow-lg shadow-blue-600/20 transition-colors"><Camera className="mr-3" /> I Found It!</button></div>
-                </div>
-            )}
-
-            {currentStage === 'scanner' && (
-                <div className="flex flex-col min-h-screen bg-black">
-                    <div className="relative flex-grow overflow-hidden">
-                        <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover"></video>
-                        <div className="absolute inset-0 border-[12px] border-transparent pointer-events-none" style={{borderImage: 'linear-gradient(to bottom right, #3b82f6 0%, transparent 40%, transparent 60%, #3b82f6 100%) 1'}}></div>
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 h-56 border-2 border-dashed border-white/50 rounded-xl pointer-events-none flex items-end justify-center pb-2">{scanning && <div className="scanner-line"></div>}</div>
-                        {scanning && !scanResult && (
-                            <div className="absolute top-4 left-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs p-2 rounded-lg text-center border border-slate-700 font-mono">AI Sees: <span className={currentPrediction.includes(currentLocation.tmClassName) ? "text-green-400" : "text-yellow-400"}>{currentPrediction || "Looking..."}</span></div>
-                        )}
-                        {scanResult === 'success' && (
-                            <div className="absolute inset-0 bg-green-500/90 backdrop-blur-sm flex flex-col items-center justify-center z-10 transition-all duration-300"><CheckCircle size={80} className="text-white mb-4 animate-bounce drop-shadow-lg" /><h2 className="text-3xl font-bold text-white drop-shadow-md">Target Found!</h2></div>
-                        )}
-                    </div>
-                    <div className="p-6 bg-slate-900 rounded-t-3xl pb-8 border-t border-slate-800 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-20">
-                        <p className="text-center text-slate-400 mb-6 font-medium">Point your camera at the target and tap analyze.</p>
-                        <div className="flex space-x-4">
-                            <button onClick={() => { stopCamera(); setCurrentStage('clue'); }} className="bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold py-4 px-4 rounded-xl flex-1 transition-colors" disabled={scanResult}>Cancel</button>
-                            {!scanning ? (
-                                <button onClick={startScanning} className="bg-green-600 hover:bg-green-500 text-white font-bold py-4 px-4 rounded-xl flex-[2] shadow-lg shadow-green-600/20 transition-colors" disabled={scanResult}>Analyze Object</button>
-                            ) : (
-                                <button onClick={stopScanning} className="bg-red-600 hover:bg-red-500 text-white font-bold py-4 px-4 rounded-xl flex-[2] shadow-lg shadow-red-600/20 transition-colors" disabled={scanResult}>Stop Scanning</button>
-                            )}
-                        </div>
-                        <button onClick={() => { stopCamera(); setCurrentStage('quiz'); }} className="mt-6 text-sm text-slate-500 hover:text-slate-300 underline w-full text-center block transition-colors" disabled={scanning || scanResult}>Camera not working? Use Secret Code</button>
-                    </div>
-                </div>
-            )}
-
-            {currentStage === 'quiz' && (
-                <div className="flex flex-col min-h-screen p-6 bg-slate-900">
-                    {quizFeedback && (
-                        <div className={`fixed top-4 left-4 right-4 z-50 p-4 rounded-xl shadow-lg flex items-center backdrop-blur-sm font-medium ${quizFeedback.type === 'success' ? 'bg-green-600/90 text-white' : 'bg-red-600/90 text-white'}`}>
-                            {quizFeedback.type === 'success' ? <CheckCircle className="mr-3" size={24} /> : <AlertTriangle className="mr-3" size={24} />}
-                            {quizFeedback.text}
-                        </div>
-                    )}
-                    <div className="text-center mb-6"><h2 className="text-2xl font-bold text-green-400 mb-2 text-center">Location Discovered!</h2><p className="text-slate-400">Now, observe your surroundings to answer the question.</p></div>
-                    <div className="rounded-2xl overflow-hidden mb-8 border border-green-500/50 shadow-lg shadow-green-900/20 h-48 relative"><img src={currentLocation.clueImage} alt="Revealed Object" className="w-full h-full object-cover transition-all duration-1000 ease-in-out" /><div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div><div className="absolute bottom-4 left-4 text-white font-bold text-lg drop-shadow-md">{currentLocation.name}</div></div>
-                    <div className="bg-slate-800/80 p-6 rounded-2xl shadow-xl border border-slate-700 mb-6 flex-grow">
-                        <h3 className="text-xl font-bold mb-6 text-slate-100 leading-snug">{currentLocation.quiz.question}</h3>
-                        <div className="space-y-3">
-                            {currentLocation.quiz.options.map((option, idx) => (
-                                <button key={idx} onClick={() => {
-                                    if (option === currentLocation.quiz.correctAnswer) {
-                                        setQuizFeedback({ type: 'success', text: 'Correct! On to the next clue.' });
-                                        setTimeout(() => {
-                                            setQuizFeedback(null);
-                                            if (currentLocationIndex + 1 < huntData.length) {
-                                                setCurrentLocationIndex(currentLocationIndex + 1);
-                                                setCurrentStage('clue');
-                                            } else { setCurrentStage('success'); }
-                                        }, 1500);
-                                    } else {
-                                        setQuizFeedback({ type: 'error', text: 'Incorrect, look closer at the object!' });
-                                        setTimeout(() => setQuizFeedback(null), 2000);
-                                    }
-                                }} className="w-full bg-slate-700/50 hover:bg-slate-600 text-left px-5 py-4 rounded-xl border border-slate-600/50 transition-all hover:border-slate-400 hover:shadow-md text-slate-200 font-medium">{option}</button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {currentStage === 'success' && (
-                <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-gradient-to-b from-green-900/40 to-slate-900 relative overflow-hidden">
-                    <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'radial-gradient(circle at center, #4ade80 0%, transparent 70%)'}}></div>
-                    <Trophy size={100} className="text-yellow-400 mb-8 drop-shadow-[0_0_30px_rgba(250,204,21,0.6)] z-10 animate-pulse" />
-                    <h1 className="text-4xl font-bold mb-4 font-serif text-white z-10">Congratulations!</h1>
-                    <p className="text-slate-300 mb-8 text-lg z-10 max-w-md leading-relaxed">You have successfully completed the British Hills Treasure Hunt and discovered all its secrets.</p>
-                    <div className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 w-full max-w-sm mb-8 z-10"><p className="text-yellow-500 font-bold mb-2">Claim Your Reward</p><p className="text-slate-400 text-sm">Show this screen to the reception desk to prove your accomplishment!</p></div>
-                    <button onClick={() => { setCurrentLocationIndex(0); setCurrentStage('intro'); }} className="bg-transparent border-2 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white font-bold py-3 px-8 rounded-full transition-all z-10">Play Again</button>
-                </div>
-            )}
+    <!-- Error Toast -->
+    <div id="error-toast" class="fixed top-4 left-4 right-4 z-[100] bg-red-600/90 text-white p-4 rounded-xl shadow-lg flex items-center justify-between backdrop-blur-sm hidden">
+        <div class="flex items-center">
+            <i data-lucide="alert-triangle" class="mr-3"></i>
+            <span id="error-msg" class="text-sm font-medium"></span>
         </div>
-    );
-}
+        <button onclick="hideError()" class="ml-4 font-bold px-3 py-1 bg-red-800 rounded-lg">Dismiss</button>
+    </div>
+
+    <!-- Quiz Feedback Toast -->
+    <div id="quiz-feedback" class="fixed top-4 left-4 right-4 z-[100] p-4 rounded-xl shadow-lg flex items-center backdrop-blur-sm font-medium feedback-toast">
+        <i id="feedback-icon" class="mr-3"></i>
+        <span id="feedback-text"></span>
+    </div>
+
+    <!-- Intro Stage -->
+    <div id="stage-intro" class="stage active items-center justify-center p-6 text-center bg-gradient-to-b from-slate-900 to-slate-800">
+        <div class="mb-6 w-56 h-56 flex items-center justify-center">
+            <i data-lucide="castle" class="text-yellow-500 w-24 h-24 drop-shadow-lg"></i>
+        </div>
+        <h1 class="text-4xl font-bold mb-4 font-serif text-yellow-500">British Hills<br/><span class="text-3xl text-white font-sans">Treasure Hunt</span></h1>
+        <p class="text-slate-300 mb-8 max-w-md text-lg">
+            Explore British Hills, scan objects, answer questions, and win!
+        </p>
+        <div id="loading-ai" class="flex items-center text-slate-400 bg-slate-800/50 py-3 px-6 rounded-full">
+            <i data-lucide="loader-2" class="animate-spin mr-3 text-yellow-500"></i>
+            Loading AI Scanner...
+        </div>
+        <button id="start-btn" onclick="goToClue(0)" class="hidden bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-yellow-600/20 transition-transform transform hover:scale-105 text-lg w-full max-w-xs">
+            Start the Hunt
+        </button>
+    </div>
+
+    <!-- Clue Stage -->
+    <div id="stage-clue" class="stage p-6">
+        <div class="flex justify-between items-center mb-6 text-slate-400 font-medium">
+            <span id="clue-progress">Clue 1 of 5</span>
+            <span class="text-yellow-500 uppercase text-xs font-bold tracking-widest">Find this!</span>
+        </div>
+        <div class="relative rounded-2xl overflow-hidden mb-6 border border-slate-700 shadow-2xl bg-black h-64 flex items-center justify-center">
+            <img id="clue-image" src="" alt="Clue" class="w-full h-full object-cover blur-[10px] grayscale opacity-75">
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <i data-lucide="eye-off" class="text-white opacity-50 w-12 h-12"></i>
+            </div>
+        </div>
+        <div class="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 border border-slate-700">
+            <h2 class="text-xl font-bold mb-3 text-yellow-500 flex items-center">
+                <i data-lucide="scroll-text" class="mr-2 w-5 h-5"></i> Hint
+            </h2>
+            <p id="clue-hint" class="text-slate-200 text-lg leading-relaxed"></p>
+        </div>
+        <div class="mt-auto pb-4">
+            <button onclick="startCamera()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-2xl w-full flex items-center justify-center text-lg shadow-lg">
+                <i data-lucide="camera" class="mr-3"></i> I Found It!
+            </button>
+        </div>
+    </div>
+
+    <!-- Scanner Stage -->
+    <div id="stage-scanner" class="stage bg-black">
+        <div class="relative flex-grow overflow-hidden">
+            <video id="webcam" autoPlay playsInline muted class="absolute inset-0 w-full h-full object-cover"></video>
+            <div class="absolute inset-0 border-[12px] border-transparent pointer-events-none" style="border-image: linear-gradient(to bottom right, #3b82f6 0%, transparent 40%, transparent 60%, #3b82f6 100%) 1"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 h-56 border-2 border-dashed border-white/50 rounded-xl pointer-events-none flex items-end justify-center pb-2">
+                <div id="scan-line" class="scanner-line hidden"></div>
+            </div>
+            <div id="ai-label-container" class="absolute top-4 left-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs p-2 rounded-lg text-center border border-slate-700 font-mono hidden">
+                AI Sees: <span id="ai-prediction" class="text-yellow-400">Looking...</span>
+            </div>
+            <div id="scan-success-overlay" class="absolute inset-0 bg-green-500/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 hidden">
+                <i data-lucide="check-circle" class="text-white w-20 h-20 mb-4 animate-bounce"></i>
+                <h2 class="text-3xl font-bold text-white">Target Found!</h2>
+            </div>
+        </div>
+        <div class="p-6 bg-slate-900 rounded-t-3xl pb-8 border-t border-slate-800 z-20">
+            <p class="text-center text-slate-400 mb-6 font-medium">Point your camera at the target and tap analyze.</p>
+            <div class="flex space-x-4">
+                <button id="cancel-scan" onclick="stopCameraAndReturn()" class="bg-slate-800 text-slate-300 font-bold py-4 px-4 rounded-xl flex-1">Cancel</button>
+                <button id="scan-btn" onclick="toggleScanning()" class="bg-green-600 text-white font-bold py-4 px-4 rounded-xl flex-[2]">Analyze Object</button>
+            </div>
+            <button onclick="skipToQuiz()" class="mt-6 text-sm text-slate-500 underline w-full text-center">Camera not working? Use Secret Code</button>
+        </div>
+    </div>
+
+    <!-- Quiz Stage -->
+    <div id="stage-quiz" class="stage p-6 bg-slate-900">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-green-400 mb-2">Location Discovered!</h2>
+            <p class="text-slate-400">Observe your surroundings to answer.</p>
+        </div>
+        <div class="rounded-2xl overflow-hidden mb-8 border border-green-500/50 shadow-lg h-48 relative">
+            <img id="quiz-reveal-image" src="" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div id="quiz-location-name" class="absolute bottom-4 left-4 text-white font-bold text-lg"></div>
+        </div>
+        <div class="bg-slate-800/80 p-6 rounded-2xl shadow-xl border border-slate-700 mb-6 flex-grow">
+            <h3 id="quiz-question" class="text-xl font-bold mb-6 text-slate-100 leading-snug"></h3>
+            <div id="quiz-options" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Success Stage -->
+    <div id="stage-success" class="stage items-center justify-center p-6 text-center bg-gradient-to-b from-green-900/40 to-slate-900">
+        <i data-lucide="trophy" class="text-yellow-400 w-24 h-24 mb-8 animate-pulse"></i>
+        <h1 class="text-4xl font-bold mb-4 font-serif">Congratulations!</h1>
+        <p class="text-slate-300 mb-8 text-lg max-w-md">You've successfully completed the British Hills Treasure Hunt!</p>
+        <div class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 w-full max-w-sm mb-8">
+            <p class="text-yellow-500 font-bold mb-2">Claim Your Reward</p>
+            <p class="text-slate-400 text-sm">Show this screen to the reception desk to prove your accomplishment!</p>
+        </div>
+        <button onclick="location.reload()" class="bg-transparent border-2 border-slate-600 text-slate-300 py-3 px-8 rounded-full">Play Again</button>
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        const huntData = [
+            {
+                id: 1, name: "The Post Box", tmClassName: "Post Box",
+                hint: "I am bright red and stand proudly, waiting to swallow your messages.",
+                clueImage: "https://images.unsplash.com/photo-1566351540902-6e2e21b033fa?q=80&w=800&auto=format&fit=crop",
+                quiz: {
+                    question: "Whose royal cypher (initials) is cast into the metal?",
+                    options: ["VR (Victoria Regina)", "GR (George Rex)", "ER (Elizabeth Regina)", "CR (Charles Rex)"],
+                    correctAnswer: "ER (Elizabeth Regina)"
+                }
+            },
+            {
+                id: 2, name: "Shakespeare's Statue", tmClassName: "Shakespeare",
+                hint: "To be, or not to be... Seek the famous man of words thinking quietly.",
+                clueImage: "https://images.unsplash.com/photo-1588533810088-251f2f01f4e1?q=80&w=800&auto=format&fit=crop",
+                quiz: {
+                    question: "What is Shakespeare holding?",
+                    options: ["A quill and parchment", "A skull", "A book", "Nothing"],
+                    correctAnswer: "A quill and parchment"
+                }
+            },
+            {
+                id: 3, name: "The Stained Glass Window", tmClassName: "Window",
+                hint: "When the sun shines, I paint the floor with colours. Look up!",
+                clueImage: "https://images.unsplash.com/photo-1510168700204-70678f45a75b?q=80&w=800&auto=format&fit=crop",
+                quiz: {
+                    question: "What kind of tree is shown on this window?",
+                    options: ["Willow Tree", "Cherry Blossom Tree", "Christmas Tree", "Oak Tree"],
+                    correctAnswer: "Oak Tree"
+                }
+            },
+            {
+                id: 4, name: "The Garden Shed", tmClassName: "Shed",
+                hint: "Where tools rest and seeds wait. I protect them from the weather.",
+                clueImage: "https://images.unsplash.com/photo-1581454649479-0dbf57ea7106?q=80&w=800&auto=format&fit=crop",
+                quiz: {
+                    question: "What guest house is closest to this shed?",
+                    options: ["Newton", "Chaucer", "Turner", "The Barracks"],
+                    correctAnswer: "Newton"
+                }
+            },
+            {
+                id: 5, name: "The Falstaff Pub Sign", tmClassName: "Pub Sign",
+                hint: "A sign of a good time for people who want to enjoy a drink.",
+                clueImage: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=800&auto=format&fit=crop",
+                quiz: {
+                    question: "What is Sir John Falstaff holding in his hand?",
+                    options: ["A tankard of ale", "A wooden pipe", "A sword", "A turkey leg"],
+                    correctAnswer: "A tankard of ale"
+                }
+            }
+        ];
+
+        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/jdknW0HDJ/";
+        let model, webcam, maxPredictions;
+        let currentIndex = 0;
+        let isScanning = false;
+        let scanInterval;
+
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- NAVIGATION ---
+        function showStage(stageId) {
+            document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+            document.getElementById(`stage-${stageId}`).classList.add('active');
+        }
+
+        // --- AI INITIALIZATION ---
+        async function initAI() {
+            try {
+                model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+                maxPredictions = model.getTotalClasses();
+                document.getElementById('loading-ai').classList.add('hidden');
+                document.getElementById('start-btn').classList.remove('hidden');
+            } catch (err) {
+                showError("AI Model failed to load. Please check your internet.");
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function goToClue(index) {
+            currentIndex = index;
+            const data = huntData[currentIndex];
+            document.getElementById('clue-progress').innerText = `Clue ${index + 1} of ${huntData.length}`;
+            document.getElementById('clue-image').src = data.clueImage;
+            document.getElementById('clue-hint').innerText = data.hint;
+            showStage('clue');
+        }
+
+        async function startCamera() {
+            showStage('scanner');
+            const video = document.getElementById('webcam');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" }
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = stream;
+                } catch (e) {
+                    showError("Could not access camera.");
+                    showStage('clue');
+                }
+            }
+        }
+
+        function stopCameraAndReturn() {
+            stopScanning();
+            const video = document.getElementById('webcam');
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(t => t.stop());
+            }
+            showStage('clue');
+        }
+
+        function toggleScanning() {
+            const btn = document.getElementById('scan-btn');
+            const line = document.getElementById('scan-line');
+            const container = document.getElementById('ai-label-container');
+
+            if (!isScanning) {
+                isScanning = true;
+                btn.innerText = "Stop Scanning";
+                btn.classList.replace('bg-green-600', 'bg-red-600');
+                line.classList.remove('hidden');
+                container.classList.remove('hidden');
+                startPredictionLoop();
+            } else {
+                stopScanning();
+            }
+        }
+
+        function stopScanning() {
+            isScanning = false;
+            clearInterval(scanInterval);
+            const btn = document.getElementById('scan-btn');
+            btn.innerText = "Analyze Object";
+            btn.classList.replace('bg-red-600', 'bg-green-600');
+            document.getElementById('scan-line').classList.add('hidden');
+            document.getElementById('ai-label-container').classList.add('hidden');
+        }
+
+        async function startPredictionLoop() {
+            const video = document.getElementById('webcam');
+            const predictionLabel = document.getElementById('ai-prediction');
+            const target = huntData[currentIndex].tmClassName;
+
+            scanInterval = setInterval(async () => {
+                const predictions = await model.predict(video);
+                const top = predictions.reduce((prev, current) => (prev.probability > current.probability) ? prev : current);
+                
+                predictionLabel.innerText = `${top.className} (${Math.round(top.probability * 100)}%)`;
+                predictionLabel.className = top.className === target ? "text-green-400" : "text-yellow-400";
+
+                if (top.className === target && top.probability > 0.85) {
+                    handleSuccess();
+                }
+            }, 500);
+        }
+
+        function handleSuccess() {
+            stopScanning();
+            document.getElementById('scan-success-overlay').classList.remove('hidden');
+            setTimeout(() => {
+                const video = document.getElementById('webcam');
+                if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+                document.getElementById('scan-success-overlay').classList.add('hidden');
+                setupQuiz();
+            }, 2000);
+        }
+
+        function skipToQuiz() {
+            const video = document.getElementById('webcam');
+            if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+            setupQuiz();
+        }
+
+        function setupQuiz() {
+            const data = huntData[currentIndex];
+            document.getElementById('quiz-reveal-image').src = data.clueImage;
+            document.getElementById('quiz-location-name').innerText = data.name;
+            document.getElementById('quiz-question').innerText = data.quiz.question;
+            
+            const optionsBox = document.getElementById('quiz-options');
+            optionsBox.innerHTML = '';
+            
+            data.quiz.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full bg-slate-700/50 hover:bg-slate-600 text-left px-5 py-4 rounded-xl border border-slate-600/50 transition-all text-slate-200 font-medium";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, data.quiz.correctAnswer);
+                optionsBox.appendChild(btn);
+            });
+            showStage('quiz');
+        }
+
+        function checkAnswer(selected, correct) {
+            if (selected === correct) {
+                showFeedback('success', 'Correct! Well done.');
+                setTimeout(() => {
+                    if (currentIndex + 1 < huntData.length) {
+                        goToClue(currentIndex + 1);
+                    } else {
+                        showStage('success');
+                    }
+                }, 1500);
+            } else {
+                showFeedback('error', 'Not quite! Look closer at the object.');
+            }
+        }
+
+        // --- UI HELPERS ---
+        function showError(msg) {
+            document.getElementById('error-msg').innerText = msg;
+            document.getElementById('error-toast').classList.remove('hidden');
+        }
+        function hideError() {
+            document.getElementById('error-toast').classList.add('hidden');
+        }
+
+        function showFeedback(type, text) {
+            const toast = document.getElementById('quiz-feedback');
+            const icon = document.getElementById('feedback-icon');
+            const label = document.getElementById('feedback-text');
+
+            toast.className = `fixed top-4 left-4 right-4 z-[100] p-4 rounded-xl shadow-lg flex items-center backdrop-blur-sm font-medium feedback-toast show ${type === 'success' ? 'bg-green-600/90 text-white' : 'bg-red-600/90 text-white'}`;
+            label.innerText = text;
+            icon.setAttribute('data-lucide', type === 'success' ? 'check-circle' : 'alert-triangle');
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Start App
+        window.onload = initAI;
+    </script>
+</body>
+</html>
