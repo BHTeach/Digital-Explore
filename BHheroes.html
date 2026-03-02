@@ -93,63 +93,99 @@
     <!-- Application Logic -->
     <script>
         // --- DATA & VALIDATION RULES ---
-        // Cross-referenced from the 8 posters to build a smart, forgiving auto-checker.
+        // Refactored to accept ANY valid portion of a split answer, setting the UI 
+        // to match exactly what the user discovered.
         const correctAnswers = {
             amy: {
-                country: { hint: "New Zealand", check: v => v.includes('zealand') || v.includes('nz') },
-                birthday: { hint: "April 2nd", check: v => v.includes('apr') && v.includes('2') },
-                likes: { hint: "Hunting, music, camping", check: v => v.includes('hunt') || v.includes('music') || v.includes('camp') },
-                color: { hint: "Olive green", check: v => v.includes('olive') || v.includes('green') || v.includes('pastel') },
-                dislikes: { hint: "Waking up early", check: v => v.includes('early') || v.includes('wake') || v.includes('waking') }
+                country: { options: [{ text: "New Zealand", check: v => v.includes('zealand') || v.includes('nz') }] },
+                birthday: { options: [{ text: "2 April", check: v => v.includes('apr') && (v.includes('2') || v.includes('second')) && !v.includes('22') }] },
+                likes: { options: [
+                    { text: "Hunting, music, & camping", check: v => (v.includes('hunt') && v.includes('music')) || (v.includes('camp') && v.includes('music')) || (v.includes('hunt') && v.includes('camp')) },
+                    { text: "Hunting", check: v => v.includes('hunt') },
+                    { text: "Music", check: v => v.includes('music') },
+                    { text: "Camping", check: v => v.includes('camp') }
+                ]},
+                color: { options: [
+                    { text: "Olive green & Pastel tones", check: v => (v.includes('olive') || v.includes('green')) && (v.includes('pastel') || v.includes('tone')) },
+                    { text: "Olive green", check: v => v.includes('olive') || v.includes('green') },
+                    { text: "Pastel tones", check: v => v.includes('pastel') || v.includes('tone') }
+                ]},
+                dislikes: { options: [{ text: "Waking up early", check: v => v.includes('early') || v.includes('wake') || v.includes('waking') }] }
             },
             donovan: {
-                country: { hint: "Canada", check: v => v.includes('canada') || v.includes('canadian') },
-                birthday: { hint: "April 17th", check: v => v.includes('apr') && v.includes('17') },
-                likes: { hint: "Rain, cats, PC games", check: v => v.includes('rain') || v.includes('cat') || v.includes('game') || v.includes('pc') },
-                color: { hint: "Emerald green", check: v => v.includes('emerald') || v.includes('green') },
-                dislikes: { hint: "Really hot weather", check: v => v.includes('hot') || v.includes('heat') }
+                country: { options: [{ text: "Canada", check: v => v.includes('canada') || v.includes('canadian') }] },
+                birthday: { options: [{ text: "17 April", check: v => v.includes('apr') && v.includes('17') }] },
+                likes: { options: [
+                    { text: "Rain, cats, & PC games", check: v => (v.includes('rain') && v.includes('cat')) || (v.includes('rain') && v.includes('game')) || (v.includes('cat') && v.includes('game')) },
+                    { text: "Rain", check: v => v.includes('rain') },
+                    { text: "Cats", check: v => v.includes('cat') },
+                    { text: "PC games", check: v => v.includes('game') || v.includes('pc') }
+                ]},
+                color: { options: [{ text: "Emerald green", check: v => v.includes('emerald') || v.includes('green') }] },
+                dislikes: { options: [{ text: "Hot weather", check: v => v.includes('hot') || v.includes('heat') }] }
             },
             emma: {
-                country: { hint: "England", check: v => v.includes('england') || v.includes('uk') || v.includes('britain') },
-                birthday: { hint: "June 12th", check: v => v.includes('jun') && v.includes('12') },
-                likes: { hint: "Card games, writing", check: v => v.includes('card') || v.includes('writ') },
-                color: { hint: "Black", check: v => v.includes('black') },
-                dislikes: { hint: "Bananas", check: v => v.includes('banana') }
+                country: { options: [{ text: "England", check: v => v.includes('england') || v.includes('uk') || v.includes('britain') }] },
+                birthday: { options: [{ text: "12 June", check: v => v.includes('jun') && v.includes('12') }] },
+                likes: { options: [
+                    { text: "Writing & card games", check: v => v.includes('writ') && (v.includes('card') || v.includes('game')) },
+                    { text: "Writing", check: v => v.includes('writ') },
+                    { text: "Card games", check: v => v.includes('card') || v.includes('game') }
+                ]},
+                color: { options: [{ text: "Black", check: v => v.includes('black') }] },
+                dislikes: { options: [{ text: "Bananas", check: v => v.includes('banana') }] }
             },
             jessica: {
-                country: { hint: "Jamaica", check: v => v.includes('jamaica') },
-                birthday: { hint: "July 21st", check: v => v.includes('jul') && v.includes('21') },
-                likes: { hint: "Reading", check: v => v.includes('read') || v.includes('book') },
-                color: { hint: "Yellow and blue", check: v => v.includes('yellow') || v.includes('blue') },
-                dislikes: { hint: "Drinking coffee", check: v => v.includes('coffee') || v.includes('drink') }
+                country: { options: [{ text: "Jamaica", check: v => v.includes('jamaica') }] },
+                birthday: { options: [{ text: "21 July", check: v => v.includes('jul') && v.includes('21') }] },
+                likes: { options: [
+                    { text: "Reading & flowers", check: v => (v.includes('read') || v.includes('book')) && v.includes('flower') },
+                    { text: "Reading", check: v => v.includes('read') || v.includes('book') },
+                    { text: "Flowers", check: v => v.includes('flower') }
+                ]},
+                color: { options: [
+                    { text: "Yellow & blue", check: v => v.includes('yellow') && v.includes('blue') },
+                    { text: "Yellow", check: v => v.includes('yellow') },
+                    { text: "Blue", check: v => v.includes('blue') }
+                ]},
+                dislikes: { options: [{ text: "Drinking coffee", check: v => v.includes('coffee') || v.includes('drink') }] }
             },
             randy: {
-                country: { hint: "Trinidad & Tobago", check: v => v.includes('trinidad') || v.includes('tobago') },
-                birthday: { hint: "May 9th", check: v => v.includes('may') && v.includes('9') },
-                likes: { hint: "Cooking", check: v => v.includes('cook') },
-                color: { hint: "Black", check: v => v.includes('black') },
-                dislikes: { hint: "Winter", check: v => v.includes('winter') || v.includes('snow') || v.includes('cold') }
+                country: { options: [{ text: "Trinidad & Tobago", check: v => v.includes('trinidad') || v.includes('tobago') }] },
+                birthday: { options: [{ text: "9 May", check: v => v.includes('may') && v.includes('9') }] },
+                likes: { options: [{ text: "Cooking", check: v => v.includes('cook') }] },
+                color: { options: [{ text: "Black", check: v => v.includes('black') }] },
+                dislikes: { options: [{ text: "Winter", check: v => v.includes('winter') || v.includes('snow') || v.includes('cold') }] }
             },
             shannon: {
-                country: { hint: "South Africa", check: v => v.includes('south') || v.includes('africa') || v.includes('sa') },
-                birthday: { hint: "January 19th", check: v => v.includes('jan') && v.includes('19') },
-                likes: { hint: "Table tennis, the beach", check: v => v.includes('tennis') || v.includes('beach') || v.includes('table') },
-                color: { hint: "Dark green", check: v => v.includes('dark') || v.includes('green') },
-                dislikes: { hint: "Cold weather", check: v => v.includes('cold') || v.includes('weather') }
+                country: { options: [{ text: "South Africa", check: v => v.includes('south') || v.includes('africa') || v.includes('sa') }] },
+                birthday: { options: [{ text: "19 January", check: v => v.includes('jan') && v.includes('19') }] },
+                likes: { options: [
+                    { text: "Table tennis, beach, & games", check: v => (v.includes('tennis') && v.includes('beach')) || (v.includes('tennis') && v.includes('game')) || (v.includes('beach') && v.includes('game')) },
+                    { text: "Table tennis", check: v => v.includes('tennis') || v.includes('table') },
+                    { text: "The beach", check: v => v.includes('beach') },
+                    { text: "Video games", check: v => v.includes('video') || v.includes('game') }
+                ]},
+                color: { options: [{ text: "Dark green", check: v => v.includes('dark') || v.includes('green') }] },
+                dislikes: { options: [{ text: "Cold weather", check: v => v.includes('cold') || v.includes('weather') }] }
             },
             tom: {
-                country: { hint: "England", check: v => v.includes('england') || v.includes('uk') || v.includes('britain') },
-                birthday: { hint: "July 23rd", check: v => v.includes('jul') && v.includes('23') },
-                likes: { hint: "Magic", check: v => v.includes('magic') },
-                color: { hint: "Blue", check: v => v.includes('blue') },
-                dislikes: { hint: "Mosquitos", check: v => v.includes('mosquito') || v.includes('bug') }
+                country: { options: [{ text: "England", check: v => v.includes('england') || v.includes('uk') || v.includes('britain') }] },
+                birthday: { options: [{ text: "23 July", check: v => v.includes('jul') && v.includes('23') }] },
+                likes: { options: [{ text: "Doing magic", check: v => v.includes('magic') }] },
+                color: { options: [{ text: "Blue", check: v => v.includes('blue') }] },
+                dislikes: { options: [{ text: "Mosquitoes", check: v => v.includes('mosquito') || v.includes('bug') }] }
             },
             zain: {
-                country: { hint: "South Africa", check: v => v.includes('south') || v.includes('africa') || v.includes('sa') },
-                birthday: { hint: "April 22nd", check: v => v.includes('apr') && v.includes('22') },
-                likes: { hint: "Playing the drums", check: v => v.includes('drum') },
-                color: { hint: "Red", check: v => v.includes('red') },
-                dislikes: { hint: "Crowded places", check: v => v.includes('crowd') || v.includes('place') || v.includes('people') }
+                country: { options: [{ text: "South Africa", check: v => v.includes('south') || v.includes('africa') || v.includes('sa') }] },
+                birthday: { options: [{ text: "22 April", check: v => v.includes('apr') && v.includes('22') }] },
+                likes: { options: [
+                    { text: "Drums & computers", check: v => v.includes('drum') && (v.includes('computer') || v.includes('pc')) },
+                    { text: "Playing the drums", check: v => v.includes('drum') },
+                    { text: "Computers", check: v => v.includes('computer') || v.includes('pc') }
+                ]},
+                color: { options: [{ text: "Red", check: v => v.includes('red') }] },
+                dislikes: { options: [{ text: "Crowded places", check: v => v.includes('crowd') || v.includes('place') || v.includes('people') }] }
             }
         };
 
@@ -222,18 +258,20 @@
             // Normalize input for flexible checking
             const val = input.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
             
-            if (val.length < 2) return; // Wait until they type a bit
+            if (val.length < 2) return; 
 
             const config = correctAnswers[teacher][field];
             
-            // Smart Check
-            if (config.check(val)) {
-                markCorrect(input, teacher, field, config.hint);
+            // Evaluates options top to bottom (combo options evaluate first)
+            const match = config.options.find(opt => opt.check(val));
+            
+            if (match) {
+                markCorrect(input, teacher, field, match.text);
             }
         }
 
         function markCorrect(input, teacher, field, formattedAnswer) {
-            // Standardize the display text perfectly
+            // Replaces the box with the exact individual answer they correctly discovered
             input.value = formattedAnswer; 
             input.disabled = true;
             
@@ -264,8 +302,8 @@
             const field = randomInput.dataset.field;
             const config = correctAnswers[teacher][field];
 
-            // Trigger the success state directly
-            markCorrect(randomInput, teacher, field, config.hint);
+            // Trigger the success state using the primary (first) option
+            markCorrect(randomInput, teacher, field, config.options[0].text);
             
             // Add a brief pulse animation to draw attention to the hint
             randomInput.parentElement.classList.add('scale-105', 'z-10');
