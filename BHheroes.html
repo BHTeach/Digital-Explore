@@ -43,9 +43,6 @@
                     <div class="text-3xl font-bold text-[#8b0000]"><span id="progress-text">0 / 40</span></div>
                 </div>
                 <div class="space-x-2">
-                    <button onclick="handleHint()" class="text-sm bg-stone-200 hover:bg-stone-300 text-stone-800 font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
-                        Use a Hint
-                    </button>
                     <button onclick="resetGame()" class="text-sm bg-[#8b0000] hover:bg-[#6b0000] text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
                         Reset All
                     </button>
@@ -287,27 +284,6 @@
 
             completedFields++;
             updateProgress();
-        }
-
-        function handleHint() {
-            if (isSolved) return;
-            
-            // Find all incomplete inputs
-            const incompleteInputs = Array.from(document.querySelectorAll('input:not([disabled])'));
-            if (incompleteInputs.length === 0) return;
-            
-            // Pick a random field to reveal
-            const randomInput = incompleteInputs[Math.floor(Math.random() * incompleteInputs.length)];
-            const teacher = randomInput.dataset.teacher;
-            const field = randomInput.dataset.field;
-            const config = correctAnswers[teacher][field];
-
-            // Trigger the success state using the primary (first) option
-            markCorrect(randomInput, teacher, field, config.options[0].text);
-            
-            // Add a brief pulse animation to draw attention to the hint
-            randomInput.parentElement.classList.add('scale-105', 'z-10');
-            setTimeout(() => randomInput.parentElement.classList.remove('scale-105', 'z-10'), 300);
         }
 
         function resetGame() {
