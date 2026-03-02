@@ -120,7 +120,7 @@
             <img src="assets/logo.png" alt="British Hills Logo" class="relative z-10 w-48 h-auto drop-shadow-[0_0_15px_rgba(240,253,244,0.3)]" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
             <i id="fallback-icon" data-lucide="library" class="hidden text-[#f0fdf4] w-28 h-28 drop-shadow-[0_0_15px_rgba(240,253,244,0.3)]"></i>
         </div>
-        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-[#f0fdf4] tracking-tight">British Hills Scavenger Hunt</h1>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-[#f0fdf4] tracking-tight text-center">British Hills Scavenger Hunt</h1>
         <p class="text-lg md:text-xl font-serif italic text-[#f0fdf4]/70 mb-10 tracking-wide max-w-md">
             Explore British Hills, scan objects, answer questions, and win!
         </p>
@@ -177,7 +177,7 @@
             </div>
 
             <div id="ai-label-container" class="absolute top-8 left-8 right-8 bg-[#064e3b]/80 backdrop-blur-xl text-[#f0fdf4] text-xs p-3 rounded-xl text-center border border-[#f0fdf4]/20 font-mono hidden">
-                <span class="opacity-50">SENSORS:</span> <span id="ai-prediction" class="font-bold">INITIALIZING</span>
+                <span class="opacity-50 uppercase tracking-widest">Target Match:</span> <span id="ai-prediction" class="font-bold">0%</span>
             </div>
 
             <div id="scan-success-overlay" class="absolute inset-0 bg-[#064e3b]/95 backdrop-blur-md flex flex-col items-center justify-center z-50 hidden">
@@ -438,12 +438,22 @@
 
             scanInterval = setInterval(async () => {
                 const predictions = await model.predict(video);
-                const top = predictions.reduce((prev, current) => (prev.probability > current.probability) ? prev : current);
                 
-                predictionLabel.innerText = `${top.className.toUpperCase()} (${Math.round(top.probability * 100)}% CONFIDENCE)`;
-                predictionLabel.className = top.className === target ? "text-green-400 font-bold" : "text-yellow-200 opacity-80";
+                const targetPrediction = predictions.find(p => p.className === target);
+                const probability = targetPrediction ? targetPrediction.probability : 0;
+                const percentage = Math.round(probability * 100);
+                
+                predictionLabel.innerText = `${percentage}%`;
+                
+                if (percentage > 80) {
+                    predictionLabel.className = "font-bold text-green-400";
+                } else if (percentage > 40) {
+                    predictionLabel.className = "font-bold text-yellow-400";
+                } else {
+                    predictionLabel.className = "opacity-80 text-yellow-200";
+                }
 
-                if (top.className === target && top.probability > 0.88) {
+                if (probability > 0.88) {
                     handleSuccess();
                 }
             }, 500);
