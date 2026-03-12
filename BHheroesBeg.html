@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>British Hills Heroes Worksheet (Beginner)</title>
+    
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Symbols/Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        @keyframes stampPop {
+            0% { transform: scale(1.5) rotate(-20deg); opacity: 0; }
+            50% { transform: scale(0.9) rotate(-10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+        }
+        .stamp-anim { animation: stampPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    </style>
+</head>
+<body class="bg-[#fdfbf7] text-stone-800 p-4 md:p-8 overflow-x-hidden min-h-screen flex flex-col">
+
+    <div class="max-w-[1400px] mx-auto w-full flex-1 flex flex-col">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 gap-6 border-b-2 border-stone-800">
+            <div class="flex-1 text-center md:text-left">
+                <h1 class="text-3xl md:text-5xl font-bold uppercase tracking-wide mb-1 text-[#8b0000]">British Hills</h1>
+                <h2 class="text-2xl md:text-4xl font-light tracking-widest mb-4">Explore</h2>
+                <p class="text-sm font-medium">Do it by yourself in your free time.</p>
+                <p class="text-sm font-medium">When you finish, show your completion stamp at the Manor House Reception to get your prize!</p>
+            </div>
+            
+            <div class="flex-1 w-full max-w-sm flex flex-col items-center md:items-end space-y-3">
+                <div class="text-center md:text-right">
+                    <p class="text-xs font-bold uppercase tracking-widest text-stone-500 mb-1">Investigation Progress</p>
+                    <div class="text-3xl font-bold text-[#8b0000]"><span id="progress-text">0 / 16</span></div>
+                </div>
+                <div class="space-x-2">
+                    <button onclick="resetGame()" class="text-sm bg-[#8b0000] hover:bg-[#6b0000] text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
+                        Reset All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold uppercase tracking-wider mb-2">British Hills Heroes <span class="text-xl tracking-normal normal-case text-stone-500">(Beginner)</span></h2>
+            <p class="text-base text-stone-700 max-w-2xl mx-auto">
+                Find all 8 posters of the teachers in the Manor House. Read them carefully and type in the missing information below. <strong>The posters share information between them!</strong>
+            </p>
+        </div>
+
+        <!-- Dynamic Teachers Grid -->
+        <div id="teachers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <!-- Cards injected by JS -->
+        </div>
+        
+        <!-- Stamp Area -->
+        <div class="max-w-md mx-auto border-4 border-stone-800 p-6 text-center bg-white shadow-md mt-auto w-full">
+            <p id="stamp-instruction" class="font-bold text-sm mb-4">Complete all 16 facts to earn your stamp.</p>
+            <div id="stamp-box" class="h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative">
+                <span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div id="win-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 fade-in">
+        <div class="bg-white p-8 md:p-12 max-w-xl w-full border-4 border-[#8b0000] text-center space-y-6 shadow-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold uppercase tracking-wider text-[#8b0000]">Incredible!</h2>
+            <div class="py-4 space-y-4">
+                <p class="text-xl font-medium">You've successfully solved all the clues and uncovered the secrets of the British Hills Heroes!</p>
+            </div>
+            <p class="text-lg font-bold bg-amber-50 p-4 border-2 border-[#8b0000] text-stone-800">
+                Show your completion stamp to reception in the Manor House to get your prize!
+            </p>
+            <button id="close-modal-btn" class="w-full py-4 bg-[#8b0000] text-white font-bold text-xl tracking-widest hover:bg-[#6b0000] transition-colors mt-6 shadow-md">
+                VIEW YOUR STAMP
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // --- DATA & VALIDATION RULES ---
+        const correctAnswers = {
+            zain: {
+                country: { options: [{ text: "South Africa", check: v => v.includes('south') || v.includes('africa') || v.includes('sa') }] },
+                birthday: { options: [{ text: "22 April", check: v => v.includes('apr') && v.includes('22') }] }
+            },
+            emma: {
+                color: { options: [{ text: "Black", check: v => v.includes('black') }] },
+                likes: { options: [
+                    { text: "Writing & card games", check: v => v.includes('writ') && (v.includes('card') || v.includes('game')) },
+                    { text: "Writing", check: v => v.includes('writ') },
+                    { text: "Card games", check: v => v.includes('card') || v.includes('game') }
+                ]}
+            },
+            tom: {
+                color: { options: [{ text: "Blue", check: v => v.includes('blue') }] },
+                likes: { options: [{ text: "Doing magic", check: v => v.includes('magic') }] }
+            },
+            randy: {
+                color: { options: [{ text: "Black", check: v => v.includes('black') }] },
+                birthday: { options: [{ text: "9 May", check: v => v.includes('may') && v.includes('9') }] }
+            },
+            amy: {
+                color: { options: [
+                    { text: "Olive green & Pastel tones", check: v => (v.includes('olive') || v.includes('green')) && (v.includes('pastel') || v.includes('tone')) },
+                    { text: "Olive green", check: v => v.includes('olive') || v.includes('green') },
+                    { text: "Pastel tones", check: v => v.includes('pastel') || v.includes('tone') }
+                ]},
+                likes: { options: [
+                    { text: "Hunting, music, & camping", check: v => (v.includes('hunt') && v.includes('music')) || (v.includes('camp') && v.includes('music')) || (v.includes('hunt') && v.includes('camp')) },
+                    { text: "Hunting", check: v => v.includes('hunt') },
+                    { text: "Music", check: v => v.includes('music') },
+                    { text: "Camping", check: v => v.includes('camp') }
+                ]}
+            },
+            shannon: {
+                birthday: { options: [{ text: "19 January", check: v => v.includes('jan') && v.includes('19') }] },
+                likes: { options: [
+                    { text: "Table tennis, beach, & games", check: v => (v.includes('tennis') && v.includes('beach')) || (v.includes('tennis') && v.includes('game')) || (v.includes('beach') && v.includes('game')) },
+                    { text: "Table tennis", check: v => v.includes('tennis') || v.includes('table') },
+                    { text: "The beach", check: v => v.includes('beach') },
+                    { text: "Video games", check: v => v.includes('video') || v.includes('game') }
+                ]}
+            },
+            donovan: {
+                color: { options: [{ text: "Emerald green", check: v => v.includes('emerald') || v.includes('green') }] },
+                birthday: { options: [{ text: "17 April", check: v => v.includes('apr') && v.includes('17') }] }
+            },
+            jessica: {
+                country: { options: [{ text: "Jamaica", check: v => v.includes('jamaica') }] },
+                color: { options: [
+                    { text: "Yellow & blue", check: v => v.includes('yellow') && v.includes('blue') },
+                    { text: "Yellow", check: v => v.includes('yellow') },
+                    { text: "Blue", check: v => v.includes('blue') }
+                ]}
+            }
+        };
+
+        // Defining exactly which fields show up for which teacher in the beginner version
+        const teachersLayout = [
+            { id: 'zain', fields: ['country', 'birthday'] },
+            { id: 'emma', fields: ['color', 'likes'] },
+            { id: 'tom', fields: ['color', 'likes'] },
+            { id: 'randy', fields: ['color', 'birthday'] },
+            { id: 'amy', fields: ['color', 'likes'] },
+            { id: 'shannon', fields: ['birthday', 'likes'] },
+            { id: 'donovan', fields: ['color', 'birthday'] },
+            { id: 'jessica', fields: ['country', 'color'] }
+        ];
+
+        const fieldLabels = {
+            country: "I am from:",
+            birthday: "My birthday is:",
+            likes: "I like:",
+            color: "My favourite colour is:"
+        };
+
+        const TOTAL_FIELDS = 16;
+        let completedFields = 0;
+        let isSolved = false;
+
+        // --- DOM INITIALIZATION ---
+        const gridContainer = document.getElementById('teachers-grid');
+        const progressText = document.getElementById('progress-text');
+        const stampBox = document.getElementById('stamp-box');
+        const stampInstruction = document.getElementById('stamp-instruction');
+        const winModal = document.getElementById('win-modal');
+
+        function initDOM() {
+            gridContainer.innerHTML = '';
+            
+            teachersLayout.forEach(teacherData => {
+                const t = teacherData.id;
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] rounded flex flex-col transition-all";
+
+                let html = `<h3 class="text-2xl font-serif font-bold text-[#8b0000] mb-4 border-b-2 border-stone-200 pb-2 capitalize flex justify-between items-center">
+                                ${t}
+                                <img src="assets/${t}.jpg" alt="${t}" class="w-12 h-12 object-cover rounded-md border border-stone-300 shadow-sm shrink-0 bg-stone-100" />
+                            </h3>`;
+                html += `<div class="space-y-4 flex-1">`;
+
+                teacherData.fields.forEach(f => {
+                    html += `
+                        <div class="relative flex flex-col gap-1">
+                            <label class="text-xs font-bold text-stone-500 uppercase tracking-wider">${fieldLabels[f]}</label>
+                            <div class="relative w-full">
+                                <input type="text" data-teacher="${t}" data-field="${f}" autocomplete="off"
+                                       class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1.5 text-sm md:text-base font-bold text-stone-800 transition-colors focus:border-[#8b0000] rounded-t-sm" />
+                                <i class="fa-solid fa-check text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 transition-opacity duration-300" id="icon-${t}-${f}"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                card.innerHTML = html;
+                gridContainer.appendChild(card);
+            });
+
+            // Attach listeners to newly created inputs
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', handleInput);
+            });
+            
+            updateProgress();
+        }
+
+        // --- GAME LOGIC ---
+        function handleInput(e) {
+            const input = e.target;
+            const teacher = input.dataset.teacher;
+            const field = input.dataset.field;
+            
+            // Normalize input for flexible checking
+            const val = input.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+            
+            if (val.length < 2) return; 
+
+            const config = correctAnswers[teacher][field];
+            
+            // Evaluates options top to bottom (combo options evaluate first)
+            const match = config.options.find(opt => opt.check(val));
+            
+            if (match) {
+                markCorrect(input, teacher, field, match.text);
+            }
+        }
+
+        function markCorrect(input, teacher, field, formattedAnswer) {
+            // Replaces the box with the exact individual answer they correctly discovered
+            input.value = formattedAnswer; 
+            input.disabled = true;
+            
+            // Apply success styling
+            input.classList.remove('bg-stone-50', 'border-stone-300', 'text-stone-800');
+            input.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+            
+            // Show Checkmark
+            const icon = document.getElementById(`icon-${teacher}-${field}`);
+            if(icon) {
+                icon.classList.remove('opacity-0');
+            }
+
+            completedFields++;
+            updateProgress();
+        }
+
+        function resetGame() {
+            completedFields = 0;
+            isSolved = false;
+            
+            stampInstruction.textContent = "Complete all 16 facts to earn your stamp.";
+            stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
+            stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
+            
+            initDOM();
+        }
+
+        function updateProgress() {
+            progressText.innerText = `${completedFields} / ${TOTAL_FIELDS}`;
+            
+            if (completedFields >= TOTAL_FIELDS && !isSolved) {
+                isSolved = true;
+                
+                // Trigger Stamp Animation
+                stampInstruction.textContent = "Show this stamp to a staff member!";
+                stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
+                
+                stampBox.innerHTML = `
+                    <div class="stamp-anim text-red-600 border-4 border-red-600 px-6 py-3 text-3xl md:text-4xl font-black shadow-sm whitespace-nowrap bg-white/80 backdrop-blur-sm absolute">
+                        COMPLETE
+                    </div>
+                `;
+                
+                // Show Modal after a tiny delay
+                setTimeout(() => {
+                    winModal.classList.remove('hidden');
+                }, 600);
+            }
+        }
+
+        // Close Modal Event
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            winModal.classList.add('hidden');
+        });
+
+        // --- STARTUP ---
+        initDOM();
+
+    </script>
+</body>
+</html>
