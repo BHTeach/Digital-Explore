@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Newton's Conundrum</title>
+    
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Symbols/Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        @keyframes stampPop {
+            0% { transform: scale(1.5) rotate(-20deg); opacity: 0; }
+            50% { transform: scale(0.9) rotate(-10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+        }
+        .stamp-anim { animation: stampPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    </style>
+</head>
+<body class="bg-[#fdfbf7] text-stone-800 p-4 md:p-8 overflow-x-hidden min-h-screen flex flex-col">
+
+    <div class="max-w-[1000px] mx-auto w-full flex-1 flex flex-col">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 gap-6 border-b-2 border-stone-800">
+            <div class="flex-1 text-center md:text-left">
+                <h1 class="text-3xl md:text-5xl font-bold uppercase tracking-wide mb-1 text-[#8b0000]">British Hills</h1>
+                <h2 class="text-2xl md:text-4xl font-light tracking-widest mb-4">Explore</h2>
+                <p class="text-sm font-medium">Do it by yourself in your free time.</p>
+                <p class="text-sm font-medium">When you finish, show your completion stamp at the Manor House Reception to get your prize!</p>
+            </div>
+            
+            <div class="flex-1 w-full max-w-sm flex flex-col items-center md:items-end space-y-3">
+                <div class="text-center md:text-right">
+                    <p class="text-xs font-bold uppercase tracking-widest text-stone-500 mb-1">Investigation Progress</p>
+                    <div class="text-3xl font-bold text-[#8b0000]"><span id="progress-text">0 / 11</span></div>
+                </div>
+                <div class="space-x-2">
+                    <button onclick="resetGame()" class="text-sm bg-[#8b0000] hover:bg-[#6b0000] text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
+                        Reset All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white border-4 border-stone-800 p-6 md:p-8 shadow-[6px_6px_0px_rgba(44,30,22,1)] mb-12 flex flex-col md:flex-row items-center gap-8">
+            <div class="w-32 h-32 md:w-40 md:h-40 shrink-0 rounded-full border-4 border-stone-800 overflow-hidden bg-stone-100 flex items-center justify-center">
+                <i class="fa-solid fa-apple-whole text-[80px] text-[#8b0000]"></i>
+            </div>
+            <div class="text-center md:text-left">
+                <h2 class="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3 text-[#8b0000]">Newton's Conundrum <span class="text-xl tracking-normal normal-case text-stone-500">(Advanced)</span></h2>
+                <p class="text-base text-stone-700 leading-relaxed">
+                    Sir Isaac Newton is known as one of the great physicists and mathematicians from the past. He loved to discover new things. Help him discover British Hills by solving several challenging but fun puzzles!
+                </p>
+            </div>
+        </div>
+
+        <!-- Part 1: Guesthouse Eras -->
+        <h3 class="text-2xl font-bold uppercase tracking-widest mb-4 text-stone-800 border-b-2 border-stone-200 pb-2">1. Guesthouse Eras</h3>
+        <p class="text-stone-600 mb-6 font-medium">British Hills has 8 guest houses named after famous people from British history. Each house is built in the design of a different era when those people lived.<br><strong class="text-[#8b0000]">Hint: Look on each building! When were these house designs used?</strong></p>
+
+        <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] rounded-sm overflow-hidden mb-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-stone-300" id="houses-container">
+                <!-- House Rows Injected Here -->
+            </div>
+        </div>
+
+        <!-- Part 2: Riddles -->
+        <h3 class="text-2xl font-bold uppercase tracking-widest mb-6 text-stone-800 border-b-2 border-stone-200 pb-2">2. The Riddles</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12" id="riddles-container">
+            <!-- Riddles Injected Here -->
+        </div>
+        
+        <!-- Stamp Area -->
+        <div class="max-w-md mx-auto border-4 border-stone-800 p-6 text-center bg-white shadow-md mt-auto w-full">
+            <p id="stamp-instruction" class="font-bold text-sm mb-4">Complete all 11 challenges to earn your stamp.</p>
+            <div id="stamp-box" class="h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative">
+                <span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div id="win-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 fade-in">
+        <div class="bg-white p-8 md:p-12 max-w-xl w-full border-4 border-[#8b0000] text-center space-y-6 shadow-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold uppercase tracking-wider text-[#8b0000]">Outstanding!</h2>
+            <div class="py-4 space-y-4">
+                <p class="text-xl font-medium">You possess the brilliant, deductive mind of Sir Isaac Newton himself! You've solved every conundrum.</p>
+            </div>
+            <p class="text-lg font-bold bg-amber-50 p-4 border-2 border-[#8b0000] text-stone-800">
+                Show your completion stamp to reception in the Manor House to get your prize!
+            </p>
+            <button id="close-modal-btn" class="w-full py-4 bg-[#8b0000] text-white font-bold text-xl tracking-widest hover:bg-[#6b0000] transition-colors mt-6 shadow-md">
+                VIEW YOUR STAMP
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // --- DATA & VALIDATION ---
+        
+        const houses = [
+            { id: 'wren', name: "Sir Christopher Wren", check: v => v.includes('late') && v.includes('stuart'), display: "Late Stuart 17c", solved: false },
+            { id: 'bentley', name: "Richard Bentley", check: v => v.includes('early') && v.includes('stuart'), display: "Early Stuart 17c", solved: false },
+            { id: 'henry', name: "King Henry II", check: v => v.includes('yeoman'), display: "Yeoman 12c", solved: false },
+            { id: 'holbein', name: "Hans Holbein the Younger", display: "Tudor 15c - 16c", solved: true, prefilled: true }, // The Example
+            { id: 'newton', name: "Sir Isaac Newton", check: v => v.includes('late') && v.includes('stuart'), display: "Late Stuart 17c", solved: false },
+            { id: 'chaucer', name: "Geoffrey Chaucer", check: v => v.includes('wealden'), display: "Wealden 13c - 14c", solved: false },
+            { id: 'turner', name: "William Turner RA", check: v => v.includes('georgian'), display: "Georgian 18c", solved: false },
+            { id: 'drake', name: "Sir Francis Drake", check: v => v.includes('tudor'), display: "Tudor 15c - 16c", solved: false }
+        ];
+
+        const riddles = [
+            { id: 'r1', num: 1, icon: 'fa-hourglass-half', q: "Which guesthouse has the oldest design?", check: v => v.includes('henry'), display: "Henry II", solved: false },
+            { id: 'r2', num: 2, icon: 'fa-circle-notch', q: "I have 4 entrances but am not a building. In my heart it reads \"Pax Per Lingvuam\". To understand my shape, you must know πr². What am I?", check: v => v.includes('roundabout') || v.includes('round about'), display: "The Roundabout", solved: false },
+            { id: 'r3', num: 3, icon: 'fa-bell', q: "I am not a bird in the sky, but I sit up high. I don't speak except to say goodbye. If Shakespeare checks his watch at 9 o'clock, he will see me.", check: v => v.includes('bell'), display: "The Bell", solved: false },
+            { id: 'r4', num: 4, icon: 'fa-phone', q: "I connect people with each other. A friend, a child, a brother or mother. I am not embarrassed but my colour says I am. I am not a bell, but I can ring. I also accept coins to do my thing. The answer lies within me.", check: v => v.includes('1994') || (v.includes('british') && v.includes('hills') && v.includes('establish')), display: "British Hills was established in 1994", solved: false }
+        ];
+
+        const TOTAL_STEPS = 11; // 7 Houses + 4 Riddles
+        let completedSteps = 0;
+        let isSolved = false;
+
+        // --- DOM INITIALIZATION ---
+        function initDOM() {
+            // Render Houses
+            const housesContainer = document.getElementById('houses-container');
+            housesContainer.innerHTML = '';
+            
+            houses.forEach((h, index) => {
+                const isPrefilled = h.prefilled;
+                const value = isPrefilled ? h.display : '';
+                const disabledStr = isPrefilled ? 'disabled' : '';
+                const bgClass = isPrefilled ? 'bg-green-50' : 'bg-white';
+                const textClass = isPrefilled ? 'text-green-800' : 'text-stone-800';
+                const borderClass = isPrefilled ? 'border-green-500' : 'border-stone-300';
+                
+                const html = `
+                    <div class="bg-white p-4 flex flex-col justify-center">
+                        <label class="text-sm font-bold text-stone-700 mb-2 uppercase tracking-widest">${h.name}</label>
+                        <div class="relative">
+                            <input type="text" id="house-${h.id}" placeholder="Enter era..." autocomplete="off" value="${value}" ${disabledStr}
+                                class="w-full ${bgClass} border-b-2 ${borderClass} outline-none px-2 py-2 text-base md:text-lg font-bold ${textClass} transition-colors focus:border-[#8b0000] rounded-t-sm" 
+                                oninput="handleHouseInput('${h.id}', this.value)" />
+                            ${isPrefilled ? `<i class="fa-solid fa-check text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2"></i>` : `<i class="fa-solid fa-check text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 transition-opacity duration-300" id="icon-house-${h.id}"></i>`}
+                        </div>
+                    </div>
+                `;
+                housesContainer.innerHTML += html;
+            });
+
+            // Render Riddles
+            const riddlesContainer = document.getElementById('riddles-container');
+            riddlesContainer.innerHTML = '';
+
+            riddles.forEach(r => {
+                const html = `
+                    <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-5 flex flex-col">
+                        <div class="flex items-start gap-4 mb-4 border-b-2 border-stone-100 pb-4">
+                            <div class="w-10 h-10 rounded-full bg-[#8b0000] text-white flex items-center justify-center shrink-0">
+                                <i class="fa-solid ${r.icon} text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Riddle #${r.num}</p>
+                                <p class="text-stone-800 font-medium italic">"${r.q}"</p>
+                            </div>
+                        </div>
+                        <div class="relative mt-auto">
+                            <input type="text" id="riddle-${r.id}" placeholder="Type your answer..." autocomplete="off"
+                                class="w-full bg-stone-50 border-2 border-stone-300 outline-none px-3 py-2 text-md font-bold text-stone-800 transition-colors focus:border-[#8b0000] rounded-sm" 
+                                oninput="handleRiddleInput('${r.id}', this.value)" />
+                            <i class="fa-solid fa-check text-green-500 absolute right-3 top-1/2 transform -translate-y-1/2 opacity-0 transition-opacity duration-300" id="icon-riddle-${r.id}"></i>
+                        </div>
+                    </div>
+                `;
+                riddlesContainer.innerHTML += html;
+            });
+
+            updateProgress();
+        }
+
+        // --- GAME LOGIC ---
+        function handleHouseInput(id, val) {
+            const h = houses.find(house => house.id === id);
+            if (h.solved || h.prefilled) return;
+
+            const cleanVal = val.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+            if (cleanVal.length < 2) return;
+
+            if (h.check(cleanVal)) {
+                h.solved = true;
+                
+                const input = document.getElementById(`house-${id}`);
+                input.value = h.display;
+                input.disabled = true;
+                
+                input.classList.remove('bg-white', 'border-stone-300', 'text-stone-800');
+                input.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                
+                document.getElementById(`icon-house-${id}`).classList.remove('opacity-0');
+
+                completedSteps++;
+                updateProgress();
+            }
+        }
+
+        function handleRiddleInput(id, val) {
+            const r = riddles.find(rid => rid.id === id);
+            if (r.solved) return;
+
+            const cleanVal = val.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+            if (cleanVal.length < 2) return;
+
+            if (r.check(cleanVal)) {
+                r.solved = true;
+                
+                const input = document.getElementById(`riddle-${id}`);
+                input.value = r.display;
+                input.disabled = true;
+                
+                input.classList.remove('bg-stone-50', 'border-stone-300', 'text-stone-800');
+                input.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                
+                document.getElementById(`icon-riddle-${id}`).classList.remove('opacity-0');
+
+                completedSteps++;
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            document.getElementById('progress-text').innerText = `${completedSteps} / ${TOTAL_STEPS}`;
+            
+            if (completedSteps >= TOTAL_STEPS && !isSolved) {
+                isSolved = true;
+                
+                const stampInstruction = document.getElementById('stamp-instruction');
+                const stampBox = document.getElementById('stamp-box');
+                const winModal = document.getElementById('win-modal');
+
+                // Trigger Stamp Animation
+                stampInstruction.textContent = "Show this stamp to a staff member!";
+                stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
+                
+                stampBox.innerHTML = `
+                    <div class="stamp-anim text-red-600 border-4 border-red-600 px-6 py-3 text-3xl md:text-4xl font-black shadow-sm whitespace-nowrap bg-white/80 backdrop-blur-sm absolute">
+                        COMPLETE
+                    </div>
+                `;
+                
+                // Show Modal after delay
+                setTimeout(() => {
+                    winModal.classList.remove('hidden');
+                }, 600);
+            }
+        }
+
+        function resetGame() {
+            houses.forEach(h => { if(!h.prefilled) h.solved = false; });
+            riddles.forEach(r => r.solved = false);
+            completedSteps = 0;
+            isSolved = false;
+            
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            
+            stampInstruction.textContent = "Complete all 11 challenges to earn your stamp.";
+            stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
+            stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
+            
+            initDOM();
+        }
+
+        // Close Modal Event
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            document.getElementById('win-modal').classList.add('hidden');
+        });
+
+        // --- STARTUP ---
+        initDOM();
+
+    </script>
+</body>
+</html>
