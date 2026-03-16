@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hubbub Challenge - British Hills</title>
+    
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Symbols/Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        @keyframes stampPop {
+            0% { transform: scale(1.5) rotate(-20deg); opacity: 0; }
+            50% { transform: scale(0.9) rotate(-10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+        }
+        .stamp-anim { animation: stampPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    </style>
+</head>
+<body class="bg-[#fdfbf7] text-stone-800 p-4 md:p-8 overflow-x-hidden min-h-screen flex flex-col">
+
+    <div class="max-w-[1000px] mx-auto w-full flex-1 flex flex-col">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 gap-6 border-b-2 border-stone-800">
+            <div class="flex-1 text-center md:text-left">
+                <h1 class="text-3xl md:text-5xl font-bold uppercase tracking-wide mb-1 text-[#8b0000]">British Hills</h1>
+                <h2 class="text-2xl md:text-4xl font-light tracking-widest mb-4">Explore</h2>
+                <p class="text-sm font-medium">Do it by yourself in your free time.</p>
+                <p class="text-sm font-medium">When you finish, show your completion stamp at the Manor House Reception to get your prize!</p>
+            </div>
+            
+            <div class="flex-1 w-full max-w-sm flex flex-col items-center md:items-end justify-center space-y-3">
+                <div class="space-x-2">
+                    <button onclick="resetGame()" class="text-sm bg-[#8b0000] hover:bg-[#6b0000] text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
+                        Reset Workbook
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white border-4 border-stone-800 p-6 md:p-8 shadow-[6px_6px_0px_rgba(44,30,22,1)] mb-12 flex flex-col md:flex-row items-center gap-8">
+            <div class="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-full border-4 border-stone-800 overflow-hidden bg-stone-100 flex items-center justify-center">
+                <i class="fa-solid fa-newspaper text-[60px] md:text-[70px] text-[#8b0000]"></i>
+            </div>
+            <div class="text-center md:text-left">
+                <h2 class="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3 text-[#8b0000]">Hubbub Challenge <span class="text-xl tracking-normal normal-case text-stone-500">(Intermediate)</span></h2>
+                <p class="text-base text-stone-700 leading-relaxed font-medium">
+                    Find a copy of the <strong>hubbub</strong> newsletter (available at reception). Fill out the teacher interview and British Hills to-do list below!
+                </p>
+            </div>
+        </div>
+
+        <!-- Part 1: Meet the Teacher -->
+        <h3 class="text-2xl font-bold uppercase tracking-widest mb-4 text-stone-800 border-b-2 border-stone-200 pb-2">1. Meet the Teacher</h3>
+        <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 mb-10 space-y-6">
+            
+            <div class="flex flex-col md:flex-row items-center gap-4 text-xl font-medium">
+                <span>Meet the teacher,</span>
+                <input type="text" id="teacher-name" placeholder="name" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-[#8b0000] text-center w-full md:w-48 focus:border-[#8b0000]">
+                <span>!</span>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center gap-4 text-xl font-medium">
+                <span class="whitespace-nowrap">Where are they from?</span>
+                <input type="text" id="teacher-city" placeholder="city" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-stone-800 text-center w-full md:w-48 focus:border-[#8b0000]">
+                <span class="hidden md:inline">,</span>
+                <input type="text" id="teacher-country" placeholder="country" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-stone-800 text-center w-full md:w-48 focus:border-[#8b0000]">
+            </div>
+
+        </div>
+
+        <!-- Part 2: Fill in the Blanks -->
+        <h3 class="text-2xl font-bold uppercase tracking-widest mb-4 text-stone-800 border-b-2 border-stone-200 pb-2">2. Fill in the Blanks</h3>
+        <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 mb-10">
+            <div class="space-y-4 max-w-2xl">
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">1.</span><input type="text" id="blank-1" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">2.</span><input type="text" id="blank-2" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">3.</span><input type="text" id="blank-3" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">4.</span><input type="text" id="blank-4" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">5.</span><input type="text" id="blank-5" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
+            </div>
+        </div>
+
+        <!-- Part 3: To-Do List -->
+        <h3 class="text-2xl font-bold uppercase tracking-widest mb-4 text-stone-800 border-b-2 border-stone-200 pb-2">3. British Hills To-Do List</h3>
+        <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 mb-12">
+            <p class="text-stone-600 mb-6 font-medium">Complete <strong class="text-[#8b0000]">two or more</strong> things on the list.</p>
+            
+            <div class="space-y-4 max-w-2xl">
+                <div class="flex items-center gap-4">
+                    <input type="checkbox" id="todo-check-1" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
+                    <input type="text" id="todo-text-1" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                </div>
+                <div class="flex items-center gap-4">
+                    <input type="checkbox" id="todo-check-2" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
+                    <input type="text" id="todo-text-2" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                </div>
+                <div class="flex items-center gap-4">
+                    <input type="checkbox" id="todo-check-3" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
+                    <input type="text" id="todo-text-3" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                </div>
+                <div class="flex items-center gap-4">
+                    <input type="checkbox" id="todo-check-4" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
+                    <input type="text" id="todo-text-4" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                </div>
+                <div class="flex items-center gap-4">
+                    <input type="checkbox" id="todo-check-5" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
+                    <input type="text" id="todo-text-5" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action / Staff Trigger -->
+        <div class="text-center mb-12" id="action-area">
+            <h3 class="text-2xl font-bold text-[#8b0000] mb-4">Finished?</h3>
+            <p class="text-lg font-medium text-stone-700 mb-8">Now find a British Hills staff member to check your answers!</p>
+            
+            <button onclick="openStaffModal()" class="text-sm bg-stone-800 hover:bg-black text-stone-100 font-bold tracking-widest uppercase px-6 py-3 border-2 border-stone-800 shadow-[4px_4px_0px_rgba(200,200,200,0.5)] transition-all duration-200">
+                <i class="fa-solid fa-lock mr-2"></i> BH Staff Only - Click here to check
+            </button>
+        </div>
+        
+        <!-- Stamp Area -->
+        <div class="max-w-md mx-auto border-4 border-stone-800 p-6 text-center bg-white shadow-md mt-auto w-full">
+            <p id="stamp-instruction" class="font-bold text-sm mb-4">Get staff approval to earn your stamp.</p>
+            <div id="stamp-box" class="h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative">
+                <span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Verification Modal -->
+    <div id="staff-modal" class="hidden fixed inset-0 bg-stone-900/90 backdrop-blur-sm flex items-center justify-center p-4 z-50 fade-in">
+        <div class="bg-white p-6 md:p-8 max-w-2xl w-full border-4 border-stone-800 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+            
+            <div class="flex items-center justify-between border-b-4 border-stone-800 pb-4 mb-6">
+                <h2 class="text-2xl md:text-3xl font-black uppercase tracking-wider text-stone-800"><i class="fa-solid fa-clipboard-check text-[#8b0000] mr-2"></i> Staff Review</h2>
+                <button onclick="closeStaffModal()" class="text-stone-400 hover:text-stone-800 transition-colors"><i class="fa-solid fa-xmark text-3xl"></i></button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Teacher Summary -->
+                <div class="bg-stone-50 p-4 border border-stone-300">
+                    <h3 class="font-bold text-xs uppercase text-stone-500 tracking-widest mb-2">1. Teacher Details</h3>
+                    <p class="text-lg"><strong>Name:</strong> <span id="summary-teacher" class="text-[#8b0000] font-medium"></span></p>
+                    <p class="text-lg"><strong>From:</strong> <span id="summary-location" class="text-stone-700 font-medium"></span></p>
+                </div>
+
+                <!-- Blanks Summary -->
+                <div class="bg-stone-50 p-4 border border-stone-300">
+                    <h3 class="font-bold text-xs uppercase text-stone-500 tracking-widest mb-2">2. Fill in the Blanks</h3>
+                    <ul class="space-y-1 text-lg font-medium text-stone-800" id="summary-blanks">
+                        <!-- Injected -->
+                    </ul>
+                </div>
+
+                <!-- To-Do Summary -->
+                <div class="bg-stone-50 p-4 border border-stone-300">
+                    <h3 class="font-bold text-xs uppercase text-stone-500 tracking-widest mb-2">3. To-Do List</h3>
+                    <ul class="space-y-2 text-lg text-stone-800" id="summary-todos">
+                        <!-- Injected -->
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 flex flex-col md:flex-row gap-4">
+                <button onclick="approveWork()" class="flex-1 py-4 bg-green-600 hover:bg-green-700 text-white font-black text-xl tracking-widest uppercase transition-colors shadow-md border-2 border-green-800">
+                    <i class="fa-solid fa-stamp mr-2"></i> Approve
+                </button>
+                <button onclick="closeStaffModal()" class="md:w-1/3 py-4 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold tracking-widest uppercase transition-colors shadow-sm border-2 border-stone-300">
+                    Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div id="win-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 fade-in">
+        <div class="bg-white p-8 md:p-12 max-w-xl w-full border-4 border-[#8b0000] text-center space-y-6 shadow-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold uppercase tracking-wider text-[#8b0000]">Approved!</h2>
+            <div class="py-4 space-y-4">
+                <p class="text-xl font-medium">Your Hubbub Challenge answers have been verified by British Hills staff. Excellent reading!</p>
+            </div>
+            <p class="text-lg font-bold bg-amber-50 p-4 border-2 border-[#8b0000] text-stone-800">
+                Show your completion stamp to reception in the Manor House to get your prize!
+            </p>
+            <button id="close-modal-btn" class="w-full py-4 bg-[#8b0000] text-white font-bold text-xl tracking-widest hover:bg-[#6b0000] transition-colors mt-6 shadow-md">
+                VIEW YOUR STAMP
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+    </style>
+
+    <!-- Application Logic -->
+    <script>
+        const staffModal = document.getElementById('staff-modal');
+        const winModal = document.getElementById('win-modal');
+
+        function openStaffModal() {
+            // Populate Teacher details
+            const tName = document.getElementById('teacher-name').value.trim() || '<i>(blank)</i>';
+            const tCity = document.getElementById('teacher-city').value.trim() || '<i>(blank)</i>';
+            const tCountry = document.getElementById('teacher-country').value.trim() || '<i>(blank)</i>';
+            
+            document.getElementById('summary-teacher').innerHTML = tName;
+            document.getElementById('summary-location').innerHTML = `${tCity}, ${tCountry}`;
+
+            // Populate Blanks
+            const blanksList = document.getElementById('summary-blanks');
+            blanksList.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const val = document.getElementById(`blank-${i}`).value.trim() || '<span class="text-stone-400 italic">(blank)</span>';
+                blanksList.innerHTML += `<li><span class="w-6 inline-block text-stone-400 font-bold">${i}.</span> ${val}</li>`;
+            }
+
+            // Populate Todos
+            const todosList = document.getElementById('summary-todos');
+            todosList.innerHTML = '';
+            let checkedCount = 0;
+            for (let i = 1; i <= 5; i++) {
+                const isChecked = document.getElementById(`todo-check-${i}`).checked;
+                const text = document.getElementById(`todo-text-${i}`).value.trim() || '<span class="text-stone-400 italic">(blank)</span>';
+                
+                if(isChecked) checkedCount++;
+                
+                const icon = isChecked 
+                    ? '<i class="fa-solid fa-square-check text-green-600 text-xl w-6"></i>' 
+                    : '<i class="fa-regular fa-square text-stone-300 text-xl w-6"></i>';
+                
+                todosList.innerHTML += `<li class="flex items-start gap-2 ${isChecked ? 'font-bold' : ''}">${icon} <span class="mt-0.5">${text}</span></li>`;
+            }
+            
+            // Add a warning flag if less than 2 items are checked
+            if (checkedCount < 2) {
+                todosList.innerHTML += `<div class="mt-2 text-sm font-bold text-red-600 bg-red-50 p-2 border border-red-200"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Note: Student has checked less than 2 tasks.</div>`;
+            }
+
+            staffModal.classList.remove('hidden');
+        }
+
+        function closeStaffModal() {
+            staffModal.classList.add('hidden');
+        }
+
+        function approveWork() {
+            // Lock all inputs
+            document.querySelectorAll('.bh-input').forEach(el => {
+                el.disabled = true;
+                if (el.type === 'text') {
+                    el.classList.remove('bg-stone-50', 'border-stone-300', 'border-stone-400', 'text-stone-800');
+                    el.classList.add('bg-green-50', 'border-green-400', 'text-green-800');
+                }
+            });
+
+            // Hide the staff action button
+            document.getElementById('action-area').style.display = 'none';
+
+            // Trigger Stamp
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            
+            stampInstruction.textContent = "Show this stamp to a staff member!";
+            stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-green-50 border-4 border-green-300 overflow-hidden relative";
+            
+            stampBox.innerHTML = `
+                <div class="stamp-anim text-green-600 border-4 border-green-600 px-6 py-3 text-3xl md:text-4xl font-black shadow-sm whitespace-nowrap bg-white/80 backdrop-blur-sm absolute">
+                    COMPLETE
+                </div>
+            `;
+
+            closeStaffModal();
+            
+            setTimeout(() => {
+                winModal.classList.remove('hidden');
+            }, 400);
+        }
+
+        function resetGame() {
+            // Clear inputs and unlock
+            document.querySelectorAll('.bh-input').forEach(el => {
+                el.disabled = false;
+                if (el.type === 'checkbox') {
+                    el.checked = false;
+                } else if (el.type === 'text') {
+                    el.value = '';
+                    el.classList.add('bg-stone-50', 'text-stone-800');
+                    el.classList.remove('bg-green-50', 'border-green-400', 'text-green-800');
+                    
+                    // Reapply specific border colors based on ID pattern
+                    if(el.id.includes('teacher')) {
+                        el.classList.add('border-stone-400');
+                    } else {
+                        el.classList.add('border-stone-300');
+                    }
+                }
+            });
+
+            // Restore action area
+            document.getElementById('action-area').style.display = 'block';
+
+            // Restore Stamp area
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            
+            stampInstruction.textContent = "Get staff approval to earn your stamp.";
+            stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
+            stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
+        }
+
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            winModal.classList.add('hidden');
+        });
+
+    </script>
+</body>
+</html>
