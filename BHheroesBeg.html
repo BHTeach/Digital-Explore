@@ -57,6 +57,18 @@
             </p>
         </div>
 
+        <!-- Student Info -->
+        <div class="bg-white border-2 border-stone-800 p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(44,30,22,1)] max-w-2xl mx-auto">
+            <div class="flex-1 flex items-center gap-2">
+                <label for="student-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">Name:</label>
+                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]">
+            </div>
+            <div class="flex-1 flex items-center gap-2">
+                <label for="school-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">School:</label>
+                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]">
+            </div>
+        </div>
+
         <!-- Dynamic Teachers Grid -->
         <div id="teachers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <!-- Cards injected by JS -->
@@ -65,7 +77,7 @@
         <!-- Stamp Area -->
         <div class="max-w-md mx-auto border-4 border-stone-800 p-6 text-center bg-white shadow-md mt-auto w-full">
             <p id="stamp-instruction" class="font-bold text-sm mb-4">Complete all 16 facts to earn your stamp.</p>
-            <div id="stamp-box" class="h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative">
+            <div id="stamp-box" class="min-h-[8rem] flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative">
                 <span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>
             </div>
         </div>
@@ -262,7 +274,7 @@
             isSolved = false;
             
             stampInstruction.textContent = "Complete all 16 facts to earn your stamp.";
-            stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
+            stampBox.className = "min-h-[8rem] flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
             stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
             
             initDOM();
@@ -274,13 +286,23 @@
             if (completedFields >= TOTAL_FIELDS && !isSolved) {
                 isSolved = true;
                 
+                const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
+                const now = new Date();
+                const dateStr = now.toLocaleDateString();
+                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
                 // Trigger Stamp Animation
-                stampInstruction.textContent = "Show this stamp to a staff member!";
-                stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
+                stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
+                stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
                 
                 stampBox.innerHTML = `
-                    <div class="stamp-anim text-red-600 border-4 border-red-600 px-6 py-3 text-3xl md:text-4xl font-black shadow-sm whitespace-nowrap bg-white/80 backdrop-blur-sm absolute">
-                        COMPLETE
+                    <div class="text-red-600 border-4 border-red-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/95 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
+                        <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETE</div>
+                        <div class="text-xs md:text-sm font-bold border-t-2 border-red-600 pt-1 mt-1 text-stone-800">
+                            <span class="uppercase text-[#8b0000]">BH Heroes (Beg)</span><br>
+                            <span>${studentName}</span><br>
+                            <span class="text-stone-500 font-medium">${dateStr} ${timeStr}</span>
+                        </div>
                     </div>
                 `;
                 
