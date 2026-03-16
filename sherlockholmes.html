@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sherlock Holmes - British Hills</title>
+    
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Symbols/Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        @keyframes stampPop {
+            0% { transform: scale(1.5) rotate(-20deg); opacity: 0; }
+            50% { transform: scale(0.9) rotate(-10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+        }
+        .stamp-anim { animation: stampPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        .handwritten { font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", cursive; }
+    </style>
+</head>
+<body class="bg-[#fdfbf7] text-stone-800 p-4 md:p-8 overflow-x-hidden min-h-screen flex flex-col">
+
+    <div class="max-w-[1000px] mx-auto w-full flex-1 flex flex-col">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 gap-6 border-b-2 border-stone-800">
+            <div class="flex-1 text-center md:text-left">
+                <h1 class="text-3xl md:text-5xl font-bold uppercase tracking-wide mb-1 text-[#8b0000]">British Hills</h1>
+                <h2 class="text-2xl md:text-4xl font-light tracking-widest mb-4">Explore</h2>
+                <p class="text-sm font-medium">Do it by yourself in your free time.</p>
+                <p class="text-sm font-medium">When you finish, show your completion stamp at the Manor House Reception to get your prize!</p>
+            </div>
+            
+            <div class="flex-1 w-full max-w-sm flex flex-col items-center md:items-end space-y-3">
+                <div class="text-center md:text-right">
+                    <p class="text-xs font-bold uppercase tracking-widest text-stone-500 mb-1">Investigation Progress</p>
+                    <div class="text-3xl font-bold text-[#8b0000]"><span id="progress-text">0 / 8</span></div>
+                </div>
+                <div class="space-x-2">
+                    <button onclick="resetGame()" class="text-sm bg-[#8b0000] hover:bg-[#6b0000] text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
+                        Reset Investigation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-stone-900 border-4 border-stone-800 p-6 md:p-8 shadow-[6px_6px_0px_rgba(44,30,22,1)] mb-12 flex flex-col md:flex-row items-center gap-8 text-white">
+            <div class="w-32 h-32 md:w-40 md:h-40 shrink-0 rounded-full border-4 border-stone-300 overflow-hidden bg-stone-100 flex items-center justify-center">
+                <i class="fa-solid fa-user-secret text-[80px] text-stone-800"></i>
+            </div>
+            <div class="text-center md:text-left">
+                <h2 class="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3 text-stone-100">Sherlock Holmes <span class="text-xl tracking-normal normal-case text-stone-400">(Advanced)</span></h2>
+                <h3 class="text-xl font-serif italic text-amber-500 mb-3">The Mystery of the British Hills Jewels</h3>
+                <p class="text-base text-stone-300 leading-relaxed">
+                    The British Hills crown jewels have been stolen! Sherlock Holmes has found many clues but needs help to put them together. Explore British Hills, ask staff questions, and help Sherlock solve the crime!
+                </p>
+            </div>
+        </div>
+
+        <!-- Part 1: The Clues -->
+        <h3 class="text-2xl font-bold uppercase tracking-widest mb-6 text-stone-800 border-b-2 border-stone-200 pb-2">1. The Investigation</h3>
+        
+        <div class="grid grid-cols-1 gap-8 mb-12" id="questions-container">
+            <!-- Questions Injected Here -->
+        </div>
+
+        <!-- Part 2: Final Deductions -->
+        <h3 class="text-2xl font-bold uppercase tracking-widest mb-6 text-stone-800 border-b-2 border-stone-200 pb-2">2. Final Deductions</h3>
+        <p class="text-stone-600 mb-6 font-medium">Can you solve the mystery? Type your final answers below based on the clues you've gathered.</p>
+
+        <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 space-y-8 mb-8">
+            
+            <!-- Deduction 1 -->
+            <div class="space-y-3">
+                <label class="font-bold text-lg text-[#8b0000]">Who stole the crown jewels?</label>
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                    <div class="relative w-full">
+                        <input type="text" id="deduce-thief-1" placeholder="First person..." autocomplete="off"
+                            class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 transition-colors focus:border-[#8b0000]" 
+                            oninput="updateProgress()" />
+                    </div>
+                    <span class="font-bold text-stone-400">and</span>
+                    <div class="relative w-full">
+                        <input type="text" id="deduce-thief-2" placeholder="Second person..." autocomplete="off"
+                            class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 transition-colors focus:border-[#8b0000]" 
+                            oninput="updateProgress()" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deduction 2 -->
+            <div class="space-y-3">
+                <label class="font-bold text-lg text-[#8b0000]">Where did they first hide the crown jewels?</label>
+                <div class="relative w-full">
+                    <input type="text" id="deduce-location-1" placeholder="Type your answer..." autocomplete="off"
+                        class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 transition-colors focus:border-[#8b0000]" 
+                        oninput="updateProgress()" />
+                </div>
+            </div>
+
+            <!-- Deduction 3 -->
+            <div class="space-y-3">
+                <label class="font-bold text-lg text-[#8b0000]">Where are the crown jewels now?</label>
+                <div class="relative w-full">
+                    <input type="text" id="deduce-location-2" placeholder="Type your answer..." autocomplete="off"
+                        class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 transition-colors focus:border-[#8b0000]" 
+                        oninput="updateProgress()" />
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Evaluation Button -->
+        <div class="text-center mb-12">
+            <button onclick="evaluateCase()" class="text-xl bg-amber-500 hover:bg-amber-600 text-stone-900 font-black tracking-widest uppercase px-8 py-4 border-4 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_rgba(44,30,22,1)] transition-all duration-200">
+                <i class="fa-solid fa-magnifying-glass mr-2"></i> Evaluate Deductions
+            </button>
+            <p id="error-message" class="text-[#8b0000] font-bold mt-4 opacity-0 transition-opacity bg-red-100 p-3 rounded max-w-lg mx-auto border border-red-300">
+                Hmm... something isn't quite right. Review your clues and try again!
+            </p>
+        </div>
+        
+        <!-- Stamp Area -->
+        <div class="max-w-md mx-auto border-4 border-stone-800 p-6 text-center bg-white shadow-md mt-auto w-full">
+            <p id="stamp-instruction" class="font-bold text-sm mb-4">Complete the investigation to earn your stamp.</p>
+            <div id="stamp-box" class="h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative">
+                <span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div id="win-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 fade-in">
+        <div class="bg-white p-8 md:p-12 max-w-xl w-full border-4 border-[#8b0000] text-center space-y-6 shadow-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold uppercase tracking-wider text-[#8b0000]">Case Closed!</h2>
+            <div class="py-4 space-y-4">
+                <p class="text-xl font-medium">Elementary, my dear detective! You have successfully pieced together the clues and solved the mystery.</p>
+            </div>
+            <p class="text-lg font-bold bg-amber-50 p-4 border-2 border-[#8b0000] text-stone-800">
+                Show your completion stamp to reception in the Manor House to get your prize!
+            </p>
+            <button id="close-modal-btn" class="w-full py-4 bg-[#8b0000] text-white font-bold text-xl tracking-widest hover:bg-[#6b0000] transition-colors mt-6 shadow-md">
+                VIEW YOUR STAMP
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // --- DATA & VALIDATION ---
+        
+        const questions = [
+            { 
+                id: 'q1', num: 1, 
+                q: "This man was seen in the Manor House the night the jewels were stolen. What is his name?", 
+                options: ["A) Tom", "B) Harry", "C) Richard"], 
+                correct: 0,
+                image: "assets/tom.jpg"
+            },
+            { 
+                id: 'q2', num: 2, 
+                q: "The man ran into the room next to the shop. What is this room's name?", 
+                options: ["A) The Tulip Room", "B) The Rose Room", "C) The Daffodil Room"], 
+                correct: 1 
+            },
+            { 
+                id: 'q3', num: 3, 
+                q: "A note was found in the room. Look at Clue A. Who or what is 'Mr Falstaff'?", 
+                options: ["A) A teacher", "B) A pub", "C) A tree"], 
+                correct: 1,
+                clue: { title: "Clue A", text: "Don,<br><br>I left the jewels with 'Mr Falstaff,' by the Manor House.<br><br>T." }
+            },
+            { 
+                id: 'q4', num: 4, 
+                q: "A note was found near the postbox. Look at Clue B. Who is the writer who sits in the courtyard?", 
+                options: ["A) William Shakespeare", "B) Haruki Murakami", "C) Beatrix Potter"], 
+                correct: 0,
+                clue: { title: "Clue B", text: "T.,<br><br>Sherlock was here, so I moved the jewels to the writer who sits in the courtyard.<br><br>P.S. Don't use my name!<br><br>D." }
+            }
+        ];
+
+        let selections = {
+            q1: null, q2: null, q3: null, q4: null
+        };
+
+        const TOTAL_STEPS = 8;
+        let isSolved = false;
+
+        // --- DOM INITIALIZATION ---
+        function initDOM() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            
+            questions.forEach(q => {
+                let html = `
+                    <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-5 md:p-6 flex flex-col md:flex-row gap-6">
+                        
+                        <div class="flex-1 flex flex-col">
+                            <div class="flex items-start gap-3 mb-4">
+                                <div class="w-8 h-8 rounded-full bg-[#8b0000] text-white flex items-center justify-center shrink-0 font-bold mt-0.5">${q.num}</div>
+                                <p class="text-stone-800 font-bold text-lg">${q.q}</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-auto" id="opts-${q.id}">
+                `;
+
+                q.options.forEach((opt, idx) => {
+                    html += `
+                        <button onclick="handleMCSelection('${q.id}', ${idx})" 
+                            class="border-2 border-stone-300 bg-stone-50 p-3 text-sm md:text-base font-bold text-stone-700 hover:bg-stone-100 transition-colors text-left rounded-sm">
+                            ${opt}
+                        </button>
+                    `;
+                });
+
+                html += `       </div>
+                            </div>`;
+
+                // Add Image if exists
+                if (q.image) {
+                    html += `
+                        <div class="shrink-0 mx-auto md:mx-0 w-32 h-32 md:w-40 md:h-40 border-4 border-stone-800 bg-stone-200 shadow-inner overflow-hidden -order-1 md:order-last">
+                            <img src="${q.image}" alt="Suspect" class="w-full h-full object-cover">
+                        </div>
+                    `;
+                }
+
+                // Add Clue Note if exists
+                if (q.clue) {
+                    html += `
+                        <div class="shrink-0 mx-auto md:mx-0 w-full md:w-56 bg-amber-100 border border-amber-300 shadow-md p-4 rotate-1 -order-1 md:order-last">
+                            <p class="font-bold text-amber-800 mb-2 border-b border-amber-300 pb-1 text-sm uppercase tracking-wider">${q.clue.title}</p>
+                            <p class="handwritten text-stone-800 leading-relaxed text-lg">${q.clue.text}</p>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+                container.innerHTML += html;
+            });
+
+            updateProgress();
+        }
+
+        // --- GAME LOGIC ---
+
+        function handleMCSelection(qId, idx) {
+            if (isSolved) return;
+
+            selections[qId] = idx;
+            
+            // Update UI to show the button as visually "pressed" / selected
+            const container = document.getElementById(`opts-${qId}`);
+            Array.from(container.children).forEach((child, i) => {
+                if (i === idx) {
+                    child.classList.add('bg-stone-300', 'border-stone-800', 'shadow-inner');
+                    child.classList.remove('bg-stone-50', 'border-stone-300');
+                } else {
+                    child.classList.remove('bg-stone-300', 'border-stone-800', 'shadow-inner');
+                    child.classList.add('bg-stone-50', 'border-stone-300');
+                }
+            });
+
+            updateProgress();
+        }
+
+        function updateProgress() {
+            let filledCount = 0;
+            if (selections.q1 !== null) filledCount++;
+            if (selections.q2 !== null) filledCount++;
+            if (selections.q3 !== null) filledCount++;
+            if (selections.q4 !== null) filledCount++;
+            
+            if (document.getElementById('deduce-thief-1').value.trim() !== '') filledCount++;
+            if (document.getElementById('deduce-thief-2').value.trim() !== '') filledCount++;
+            if (document.getElementById('deduce-location-1').value.trim() !== '') filledCount++;
+            if (document.getElementById('deduce-location-2').value.trim() !== '') filledCount++;
+
+            document.getElementById('progress-text').innerText = `${filledCount} / ${TOTAL_STEPS}`;
+        }
+
+        function evaluateCase() {
+            if (isSolved) return;
+
+            // 1. Check Multiple Choice Questions
+            if (selections.q1 !== questions[0].correct) return triggerFail();
+            if (selections.q2 !== questions[1].correct) return triggerFail();
+            if (selections.q3 !== questions[2].correct) return triggerFail();
+            if (selections.q4 !== questions[3].correct) return triggerFail();
+
+            // 2. Check Thieves Deductions
+            const t1 = document.getElementById('deduce-thief-1').value.toLowerCase().replace(/[^a-z]/g, '');
+            const t2 = document.getElementById('deduce-thief-2').value.toLowerCase().replace(/[^a-z]/g, '');
+            
+            const hasDon = (t1.includes('don') || t2.includes('don'));
+            const hasTom = (t1.includes('tom') || t2.includes('tom'));
+            
+            if (!hasDon || !hasTom) return triggerFail();
+
+            // 3. Check Location Deductions
+            const l1 = document.getElementById('deduce-location-1').value.toLowerCase().replace(/[^a-z]/g, '');
+            const l2 = document.getElementById('deduce-location-2').value.toLowerCase().replace(/[^a-z]/g, '');
+
+            if (!(l1.includes('falstaff') || l1.includes('pub'))) return triggerFail();
+            if (!(l2.includes('shakespeare') || l2.includes('statue') || l2.includes('courtyard'))) return triggerFail();
+
+            // If code reaches this point, ALL ANSWERS ARE CORRECT!
+            triggerWin();
+        }
+
+        function triggerFail() {
+            const err = document.getElementById('error-message');
+            err.classList.remove('opacity-0');
+            
+            // Hide the error message again after a short delay
+            setTimeout(() => {
+                err.classList.add('opacity-0');
+            }, 3500);
+        }
+
+        function triggerWin() {
+            isSolved = true;
+
+            // Lock all text inputs and turn them green
+            ['deduce-thief-1', 'deduce-thief-2', 'deduce-location-1', 'deduce-location-2'].forEach(id => {
+                const el = document.getElementById(id);
+                el.disabled = true;
+                el.classList.remove('bg-stone-50', 'border-stone-300', 'text-stone-800');
+                el.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                
+                // Append checkmark
+                if (!el.nextElementSibling || el.nextElementSibling.tagName !== 'I') {
+                    el.parentElement.insertAdjacentHTML('beforeend', '<i class="fa-solid fa-check text-green-500 absolute right-3 top-1/2 transform -translate-y-1/2"></i>');
+                }
+            });
+
+            // Turn all correct MCQs green
+            questions.forEach(q => {
+                const container = document.getElementById(`opts-${q.id}`);
+                const correctBtn = container.children[q.correct];
+                correctBtn.classList.remove('bg-stone-300', 'border-stone-800');
+                correctBtn.classList.add('bg-green-100', 'border-green-600', 'text-green-800', 'shadow-sm');
+                correctBtn.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${correctBtn.innerHTML}`;
+            });
+
+            // Trigger Stamp Animation
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            const winModal = document.getElementById('win-modal');
+
+            stampInstruction.textContent = "Show this stamp to a staff member!";
+            stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
+            
+            stampBox.innerHTML = `
+                <div class="stamp-anim text-red-600 border-4 border-red-600 px-6 py-3 text-3xl md:text-4xl font-black shadow-sm whitespace-nowrap bg-white/80 backdrop-blur-sm absolute">
+                    COMPLETE
+                </div>
+            `;
+            
+            // Show Modal after a tiny delay
+            setTimeout(() => {
+                winModal.classList.remove('hidden');
+            }, 600);
+        }
+
+        function resetGame() {
+            selections = { q1: null, q2: null, q3: null, q4: null };
+            isSolved = false;
+            
+            // Reset text inputs
+            ['deduce-thief-1', 'deduce-thief-2', 'deduce-location-1', 'deduce-location-2'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.value = '';
+                    el.disabled = false;
+                    el.classList.add('bg-stone-50', 'border-stone-300', 'text-stone-800');
+                    el.classList.remove('bg-green-50', 'border-green-500', 'text-green-800');
+                    // Remove checkmark
+                    if (el.nextElementSibling && el.nextElementSibling.tagName === 'I') {
+                        el.nextElementSibling.remove();
+                    }
+                }
+            });
+
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            
+            stampInstruction.textContent = "Complete the investigation to earn your stamp.";
+            stampBox.className = "h-32 flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
+            stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
+            
+            document.getElementById('error-message').classList.add('opacity-0');
+            
+            initDOM();
+        }
+
+        // Close Modal Event
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            document.getElementById('win-modal').classList.add('hidden');
+        });
+
+        // --- STARTUP ---
+        initDOM();
+
+    </script>
+</body>
+</html>
