@@ -116,8 +116,8 @@
     <div id="stage-intro" class="stage active items-center justify-center p-8 text-center bg-gradient-to-b from-[#064e3b] to-[#043327]">
         <div class="mb-10 w-64 h-64 flex items-center justify-center relative">
             <div class="absolute inset-0 bg-[#f0fdf4]/5 rounded-full animate-pulse"></div>
-            <!-- Updated Logo Path -->
-            <img src="assets/scavengerimage.jpg" alt="British Hills Logo" class="relative z-10 w-48 h-auto drop-shadow-[0_0_15px_rgba(240,253,244,0.3)]" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
+            <!-- Top Image linking to assets/scavengerimage.jpg -->
+            <img src="assets/scavengerimage.jpg" alt="British Hills Scavenger Hunt" class="relative z-10 w-56 h-auto drop-shadow-[0_0_15px_rgba(240,253,244,0.3)] rounded-2xl" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
             <i id="fallback-icon" data-lucide="library" class="hidden text-[#f0fdf4] w-28 h-28 drop-shadow-[0_0_15px_rgba(240,253,244,0.3)]"></i>
         </div>
         <h1 class="text-3xl md:text-5xl font-bold mb-4 text-[#f0fdf4] tracking-tight text-center">British Hills Scavenger Hunt</h1>
@@ -149,7 +149,7 @@
             </button>
             
             <button id="continue-btn" onclick="continueGame()" class="hidden btn-secondary font-semibold py-4 px-8 rounded-full italic flex items-center justify-center bg-white/5">
-                <i data-lucide="bookmark" class="mr-2 w-5 h-5"></i> Resume Expedition
+                <i data-lucide="bookmark" class="mr-2 w-5 h-5"></i> Resume Progress
             </button>
         </div>
     </div>
@@ -233,15 +233,15 @@
             <div class="absolute inset-0 scale-150 blur-3xl bg-[#f0fdf4]/10 rounded-full"></div>
             <i data-lucide="award" class="text-[#f0fdf4] w-32 h-32 relative z-10 drop-shadow-[0_0_20px_rgba(240,253,244,0.4)]"></i>
         </div>
-        <h1 class="text-5xl font-bold mb-6 italic font-serif">Expedition Complete</h1>
-        <p class="text-[#f0fdf4]/70 mb-12 text-xl max-w-md leading-relaxed">Your scholarly pursuits have led you to the ultimate truth of the British Hills.</p>
+        <h1 class="text-5xl font-bold mb-6 italic font-serif">Hunt Complete</h1>
+        <p class="text-[#f0fdf4]/70 mb-12 text-xl max-w-md leading-relaxed">Well done! You have completed the British Hills Scavenger Hunt.</p>
         
         <div class="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-[#f0fdf4]/10 w-full max-w-sm mb-12 shadow-2xl">
-            <p class="text-[#f0fdf4] font-bold text-xl mb-3 tracking-widest uppercase text-xs">Final Credentials</p>
-            <p class="text-[#f0fdf4]/60 text-lg italic">Please present this digital seal to the Proctor at the Reception Desk.</p>
+            <p class="text-[#f0fdf4] font-bold text-xl mb-3 tracking-widest uppercase text-xs">Congratulations</p>
+            <p class="text-[#f0fdf4]/60 text-lg italic">Please show this screen to the reception desk to claim your reward.</p>
         </div>
         
-        <button onclick="resetGame()" class="text-[#f0fdf4]/40 hover:text-[#f0fdf4] transition-colors border-b border-transparent hover:border-[#f0fdf4]/20 pb-1 italic">Restart Expedition</button>
+        <button onclick="resetGame()" class="text-[#f0fdf4]/40 hover:text-[#f0fdf4] transition-colors border-b border-transparent hover:border-[#f0fdf4]/20 pb-1 italic">Restart Hunt</button>
     </div>
 
     <script>
