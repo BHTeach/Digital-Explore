@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BH EXPLORE SALES PORTAL</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800 min-h-screen flex flex-col items-center py-12 px-4">
+
+    <div class="max-w-3xl w-full">
+        <!-- Header -->
+        <div class="bg-stone-900 text-white p-8 rounded-t-lg shadow-md border-b-4 border-[#8b0000]">
+            <div class="flex items-center gap-4 mb-2">
+                <i class="fa-solid fa-briefcase text-3xl text-[#8b0000]"></i>
+                <h1 class="text-3xl font-bold uppercase tracking-widest">BH EXPLORE SALES PORTAL</h1>
+            </div>
+            <p class="text-stone-300 font-medium">Generate custom Activity Hub QR codes for visiting schools.</p>
+        </div>
+
+        <!-- Form Content -->
+        <div class="bg-white p-8 rounded-b-lg shadow-lg border border-stone-200">
+            
+            <!-- School Name -->
+            <div class="mb-8">
+                <label for="school-input" class="block text-sm font-bold uppercase tracking-wider text-stone-600 mb-2">School Name</label>
+                <input type="text" id="school-input" placeholder="e.g. Tokyo High School" class="w-full bg-stone-50 border-2 border-stone-300 px-4 py-3 text-lg font-bold text-stone-800 focus:outline-none focus:border-[#8b0000] rounded">
+            </div>
+
+            <!-- Activity Selection -->
+            <div class="mb-8">
+                <label class="block text-sm font-bold uppercase tracking-wider text-stone-600 mb-4">Select Allowed Activities</label>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="activity-checkboxes">
+                    
+                    <!-- Beginner -->
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="ws" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">Word Search <span class="text-xs text-stone-400 font-normal uppercase ml-1">(Beg)</span></span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="bhb" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">BH Heroes <span class="text-xs text-stone-400 font-normal uppercase ml-1">(Beg)</span></span>
+                    </label>
+
+                    <!-- Pre-Int -->
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="cw" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">Crossword <span class="text-xs text-stone-400 font-normal uppercase ml-1">(Pre-Int)</span></span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="tp" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">Treasure Hunt <span class="text-xs text-stone-400 font-normal uppercase ml-1">(Pre-Int)</span></span>
+                    </label>
+
+                    <!-- Int -->
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="bhi" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">BH Heroes <span class="text-xs text-stone-400 font-normal uppercase ml-1">(Int)</span></span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="hub" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">Hubbub Challenge <span class="text-xs text-stone-400 font-normal uppercase ml-1">(Int)</span></span>
+                    </label>
+
+                    <!-- Adv -->
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="nc" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">Newton's Conundrum <span class="text-xs text-stone-400 font-normal uppercase ml-1">(Adv)</span></span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="sh" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">Sherlock Holmes <span class="text-xs text-stone-400 font-normal uppercase ml-1">(Adv)</span></span>
+                    </label>
+
+                    <!-- New -->
+                    <label class="flex items-center gap-3 p-3 border border-stone-200 rounded hover:bg-stone-50 cursor-pointer transition-colors md:col-span-2">
+                        <input type="checkbox" value="scav" class="w-5 h-5 accent-[#8b0000] cursor-pointer">
+                        <span class="font-bold">Scavenger Hunt <span class="text-xs text-stone-400 font-normal uppercase ml-1">(New)</span></span>
+                    </label>
+
+                </div>
+                <div class="mt-3 flex gap-4">
+                    <button onclick="selectAll(true)" class="text-sm font-bold text-stone-500 hover:text-[#8b0000] underline">Select All</button>
+                    <button onclick="selectAll(false)" class="text-sm font-bold text-stone-500 hover:text-[#8b0000] underline">Deselect All</button>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button onclick="generateLink()" class="w-full bg-[#8b0000] hover:bg-[#6b0000] text-white font-bold text-lg uppercase tracking-widest py-4 rounded shadow-md transition-colors mb-8">
+                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Generate Custom Hub
+            </button>
+
+            <!-- Results Area (Hidden Initially) -->
+            <div id="results-area" class="hidden border-t-4 border-stone-200 pt-8 mt-4">
+                <h2 class="text-xl font-bold uppercase tracking-widest text-stone-800 mb-6 text-center">Ready for the School!</h2>
+                
+                <div class="flex flex-col md:flex-row gap-8 items-center justify-center">
+                    <!-- QR Code -->
+                    <div class="flex flex-col items-center">
+                        <div class="border-4 border-stone-800 p-2 bg-white rounded shadow-lg mb-4 inline-block">
+                            <img id="qr-image" src="" alt="QR Code" class="w-48 h-48 object-contain">
+                        </div>
+                        <p class="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Right-click image to save</p>
+                    </div>
+
+                    <!-- URL Link -->
+                    <div class="flex-1 w-full max-w-sm">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Direct URL</label>
+                        <div class="flex">
+                            <input type="text" id="generated-url" readonly class="w-full bg-stone-100 border border-stone-300 px-3 py-2 text-sm text-stone-600 rounded-l outline-none">
+                            <button onclick="copyUrl()" class="bg-stone-800 hover:bg-black text-white px-4 py-2 rounded-r font-bold transition-colors shrink-0">
+                                <i class="fa-regular fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <p id="copy-msg" class="text-green-600 font-bold text-sm mt-2 opacity-0 transition-opacity">Copied to clipboard!</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Advanced Settings (Optional / Hidden by default but useful if domain changes) -->
+        <div class="mt-4 text-center">
+            <p class="text-xs text-stone-400">Hub Base URL: <span id="base-url-display" class="font-mono"></span></p>
+        </div>
+
+    </div>
+
+    <script>
+        // Calculate the base URL dynamically based on where this sales.html is hosted.
+        // Assuming sales.html and index.html are in the same folder.
+        const currentUrl = window.location.href;
+        const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/index.html';
+        document.getElementById('base-url-display').innerText = baseUrl;
+
+        function selectAll(state) {
+            const checkboxes = document.querySelectorAll('#activity-checkboxes input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = state);
+        }
+
+        function generateLink() {
+            const schoolName = document.getElementById('school-input').value.trim();
+            const checkboxes = document.querySelectorAll('#activity-checkboxes input[type="checkbox"]:checked');
+            
+            if (!schoolName) {
+                alert("Please enter a School Name.");
+                return;
+            }
+            if (checkboxes.length === 0) {
+                alert("Please select at least one activity.");
+                return;
+            }
+
+            // Gather selected activity codes
+            const selectedActs = Array.from(checkboxes).map(cb => cb.value).join(',');
+            
+            // Build the final URL
+            const finalUrl = `${baseUrl}?school=${encodeURIComponent(schoolName)}&acts=${selectedActs}`;
+            
+            // Display URL
+            const urlInput = document.getElementById('generated-url');
+            urlInput.value = finalUrl;
+
+            // Generate QR Code via free API
+            const qrImage = document.getElementById('qr-image');
+            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(finalUrl)}`;
+
+            // Show results
+            document.getElementById('results-area').classList.remove('hidden');
+        }
+
+        function copyUrl() {
+            const urlInput = document.getElementById('generated-url');
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            navigator.clipboard.writeText(urlInput.value).then(() => {
+                const msg = document.getElementById('copy-msg');
+                msg.classList.remove('opacity-0');
+                setTimeout(() => msg.classList.add('opacity-0'), 2000);
+            });
+        }
+    </script>
+</body>
+</html>
