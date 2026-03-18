@@ -179,11 +179,17 @@
             urlInput.select();
             urlInput.setSelectionRange(0, 99999); // For mobile devices
             
-            navigator.clipboard.writeText(urlInput.value).then(() => {
+            try {
+                // Use execCommand for better compatibility across mobile and iframes
+                document.execCommand('copy');
+                
                 const msg = document.getElementById('copy-msg');
                 msg.classList.remove('opacity-0');
                 setTimeout(() => msg.classList.add('opacity-0'), 2000);
-            });
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                alert("Copy failed. Please copy the link manually.");
+            }
         }
     </script>
 </body>
