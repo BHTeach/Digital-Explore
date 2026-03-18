@@ -13,39 +13,62 @@
     
     <style>
         body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="bg-[#fdfbf7] text-stone-800 min-h-screen flex flex-col p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto w-full flex-1 flex flex-col">
+    <!-- ========================================== -->
+    <!-- LOCK SCREEN (Default view without QR code) -->
+    <!-- ========================================== -->
+    <div id="lock-screen" class="flex-1 flex flex-col items-center justify-center max-w-lg mx-auto w-full text-center fade-in">
+        <div class="mb-8">
+            <h1 class="text-5xl md:text-6xl font-bold uppercase tracking-widest text-[#8b0000] mb-2">British Hills</h1>
+            <h2 class="text-2xl font-light tracking-[0.2em] text-stone-600 uppercase">Explore</h2>
+        </div>
+        
+        <div class="bg-white border-4 border-stone-800 p-8 md:p-12 shadow-[8px_8px_0px_rgba(44,30,22,1)] w-full mb-12">
+            <i class="fa-solid fa-qrcode text-6xl text-stone-300 mb-6"></i>
+            <h3 class="text-2xl font-bold uppercase tracking-wider mb-4">Welcome!</h3>
+            <p class="text-lg text-stone-600 font-medium">Please scan the custom QR code provided by your school to access your activities.</p>
+        </div>
+
+        <button onclick="staffUnlock()" class="text-stone-400 hover:text-stone-600 text-sm font-bold tracking-widest uppercase transition-colors mt-auto">
+            <i class="fa-solid fa-lock mr-1"></i> Staff Access
+        </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MAIN HUB CONTENT (Hidden by default)       -->
+    <!-- ========================================== -->
+    <div id="main-content" class="max-w-5xl mx-auto w-full flex-1 flex flex-col hidden fade-in">
         
         <!-- Header -->
         <div class="text-center mb-12 border-b-4 border-[#8b0000] pb-8 pt-4">
             <h1 class="text-4xl md:text-6xl font-bold uppercase tracking-widest text-[#8b0000] mb-2">British Hills</h1>
-            <h2 class="text-2xl md:text-3xl font-light tracking-[0.2em] text-stone-600 uppercase">Activity Hub</h2>
+            <h2 id="hub-subtitle" class="text-2xl md:text-3xl font-light tracking-[0.1em] text-stone-600 uppercase">Activity Hub</h2>
         </div>
 
         <!-- Activity Sections -->
         <div class="space-y-16 flex-1">
             
             <!-- BEGINNER TIER -->
-            <section>
+            <section id="tier-beginner">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">Beginner</h3>
                     <div class="h-1 flex-1 bg-stone-300 rounded-full"></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     
-                    <!-- Word Search -->
-                    <a href="wordsearch.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
+                    <a href="wordsearch2.html" data-act="ws" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-magnifying-glass text-6xl"></i>
                         </div>
                         <h3 class="text-2xl font-bold uppercase tracking-wider mb-2">Word Search</h3>
                     </a>
 
-                    <!-- BH Heroes (Beginner) -->
-                    <a href="BHheroesBeg.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
+                    <a href="BHheroesBeg.html" data-act="bhb" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-user-check text-6xl"></i>
                         </div>
@@ -56,23 +79,21 @@
             </section>
 
             <!-- PRE-INTERMEDIATE TIER -->
-            <section>
+            <section id="tier-preint">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">Pre-Intermediate</h3>
                     <div class="h-1 flex-1 bg-stone-300 rounded-full"></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     
-                    <!-- Crossword -->
-                    <a href="crossword.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
+                    <a href="crossword.html" data-act="cw" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-table-cells text-6xl"></i>
                         </div>
                         <h3 class="text-2xl font-bold uppercase tracking-wider mb-2">Crossword</h3>
                     </a>
 
-                    <!-- Treasure Hunt (Pre-Intermediate) -->
-                    <a href="treasurehuntpre.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
+                    <a href="treasurehuntpre.html" data-act="tp" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-compass text-6xl"></i>
                         </div>
@@ -83,23 +104,21 @@
             </section>
 
             <!-- INTERMEDIATE TIER -->
-            <section>
+            <section id="tier-int">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">Intermediate</h3>
                     <div class="h-1 flex-1 bg-stone-300 rounded-full"></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     
-                    <!-- BH Heroes (Intermediate) -->
-                    <a href="BHheroes.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
+                    <a href="BHheroes.html" data-act="bhi" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-users-viewfinder text-6xl"></i>
                         </div>
                         <h3 class="text-2xl font-bold uppercase tracking-wider mb-2">BH Heroes</h3>
                     </a>
 
-                    <!-- Hubbub Challenge -->
-                    <a href="hubbubchallenge.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
+                    <a href="hubbubchallenge.html" data-act="hub" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-newspaper text-6xl"></i>
                         </div>
@@ -110,23 +129,21 @@
             </section>
 
             <!-- ADVANCED TIER -->
-            <section>
+            <section id="tier-adv">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">Advanced</h3>
                     <div class="h-1 flex-1 bg-stone-300 rounded-full"></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     
-                    <!-- Newton's Conundrum (Advanced) -->
-                    <a href="newtonsconundrum.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
+                    <a href="newtonsconundrum.html" data-act="nc" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-apple-whole text-6xl"></i>
                         </div>
                         <h3 class="text-2xl font-bold uppercase tracking-wider mb-2">Newton's Conundrum</h3>
                     </a>
 
-                    <!-- Sherlock Holmes (Advanced) -->
-                    <a href="sherlockholmes.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
+                    <a href="sherlockholmes.html" data-act="sh" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-user-secret text-6xl"></i>
                         </div>
@@ -137,15 +154,14 @@
             </section>
 
             <!-- NEW TIER -->
-            <section>
+            <section id="tier-new">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">New</h3>
                     <div class="h-1 flex-1 bg-stone-300 rounded-full"></div>
                 </div>
                 <div class="grid grid-cols-1 gap-6 md:gap-8">
                     
-                    <!-- Scavenger Hunt -->
-                    <a href="scavengerhunt.html" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200 w-full md:w-1/2 md:mx-auto">
+                    <a href="scavengerhunt.html" data-act="scav" class="group block bg-white border-4 border-stone-800 p-8 text-center shadow-[6px_6px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_rgba(139,0,0,1)] transition-all duration-200 w-full md:w-1/2 md:mx-auto">
                         <div class="text-[#8b0000] mb-4 transform group-hover:scale-110 transition-transform duration-200">
                             <i class="fa-solid fa-map-location-dot text-6xl"></i>
                         </div>
@@ -158,5 +174,57 @@
         </div>
     </div>
 
+    <!-- Smart Hub Logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const schoolName = urlParams.get('school');
+            const actsParam = urlParams.get('acts');
+
+            if (schoolName && actsParam) {
+                // UNLOCK MODE: Student scanned a valid QR code
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                
+                // Update Title
+                document.getElementById('hub-subtitle').innerText = `${schoolName} - Activity Hub`;
+
+                // Filter Activities
+                const allowedActs = actsParam.split(',');
+                const allLinks = document.querySelectorAll('a[data-act]');
+                
+                allLinks.forEach(link => {
+                    if (!allowedActs.includes(link.dataset.act)) {
+                        link.style.display = 'none'; // Hide unselected activities
+                    }
+                });
+
+                // Hide empty tier sections (e.g. if no "Advanced" activities were selected, hide the "Advanced" header)
+                document.querySelectorAll('section').forEach(sec => {
+                    // Check if there are any visible links left in this section
+                    const visibleLinks = Array.from(sec.querySelectorAll('a[data-act]')).filter(l => l.style.display !== 'none');
+                    if (visibleLinks.length === 0) {
+                        sec.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // STAFF UNLOCK OVERRIDE
+        function staffUnlock() {
+            const pass = prompt("Enter Staff Password:");
+            if (pass === "BH") {
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                document.getElementById('hub-subtitle').innerText = "Full Activity Hub (Staff Mode)";
+                
+                // Ensure all links and sections are visible in Staff Mode
+                document.querySelectorAll('a[data-act]').forEach(link => link.style.display = 'block');
+                document.querySelectorAll('section').forEach(sec => sec.style.display = 'block');
+            } else if (pass !== null) {
+                alert("Incorrect password.");
+            }
+        }
+    </script>
 </body>
 </html>
