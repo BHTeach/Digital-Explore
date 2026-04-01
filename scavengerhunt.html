@@ -116,13 +116,13 @@
     <div id="stage-intro" class="stage active items-center justify-center p-8 text-center bg-gradient-to-b from-[#064e3b] to-[#043327]">
         <div class="mb-10 w-64 h-64 flex items-center justify-center relative">
             <div class="absolute inset-0 bg-[#f0fdf4]/5 rounded-full animate-pulse"></div>
-            <!-- Top Image linking to assets/scavenger.png -->
-            <img src="assets/scavenger.png" alt="British Hills Scavenger Hunt" class="relative z-10 w-56 h-auto drop-shadow-[0_0_15px_rgba(240,253,244,0.3)] rounded-2xl" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
+            <!-- Main Logo -->
+            <img src="assets/scavenger.png" alt="British Hills Logo" class="relative z-10 w-56 h-auto drop-shadow-[0_0_15px_rgba(240,253,244,0.3)] rounded-2xl" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
             <i id="fallback-icon" data-lucide="library" class="hidden text-[#f0fdf4] w-28 h-28 drop-shadow-[0_0_15px_rgba(240,253,244,0.3)]"></i>
         </div>
         <h1 class="text-3xl md:text-5xl font-bold mb-4 text-[#f0fdf4] tracking-tight text-center">British Hills Scavenger Hunt</h1>
         
-        <!-- Simplified Instructions for Learners -->
+        <!-- Simplified Instructions -->
         <div class="mb-10 text-left max-w-sm mx-auto space-y-4 bg-white/5 p-6 rounded-2xl border border-white/10">
             <div class="flex items-start gap-4">
                 <div class="bg-[#f0fdf4] text-[#064e3b] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0 mt-1">1</div>
@@ -157,7 +157,7 @@
     <!-- Clue Stage -->
     <div id="stage-clue" class="stage p-8">
         <div class="flex justify-between items-center mb-10 text-[#f0fdf4]/60 font-medium tracking-widest uppercase text-xs">
-            <span id="clue-progress">Discovery I of VII</span>
+            <span id="clue-progress">Discovery I of VIII</span>
             <span class="text-[#f0fdf4] border-b border-[#f0fdf4]/30 pb-1">Observation Required</span>
         </div>
         
@@ -293,12 +293,12 @@
                 }
             },
             {
-                id: 6, name: "Turner", tmClassName: "Turner",
-                hint: "I wear a colour unique among the guest houses; perhaps I am shy, but I seem embarrassed?",
+                id: 6, name: "Chandelier", tmClassName: "Chandelier",
+                hint: "I hang from the ceiling in the Manor House, sparkling with many crystals.",
                 quiz: {
-                    question: "What style is Turner house?",
-                    options: ["Tudor", "Victorian", "Georgian", "Modern"],
-                    correctAnswer: "Georgian"
+                    question: "Where does the Chandelier come from?",
+                    options: ["The UK", "France", "Germany"],
+                    correctAnswer: "France"
                 }
             },
             {
@@ -308,6 +308,15 @@
                     question: "What is 'pub' short for?",
                     options: ["Public place", "Public house", "Publishing house"],
                     correctAnswer: "Public house"
+                }
+            },
+            {
+                id: 8, name: "King's Guard", tmClassName: "Kings Guard",
+                hint: "I stand tall in my red coat and tall black hat. I do not move while I work.",
+                quiz: {
+                    question: "Which do the King's Guard protect?",
+                    options: ["Buckingham Palace", "The White House", "Versailles Palace"],
+                    correctAnswer: "Buckingham Palace"
                 }
             }
         ];
@@ -380,7 +389,7 @@
         function goToClue(index) {
             currentIndex = index;
             const data = huntData[currentIndex];
-            const romans = ["I", "II", "III", "IV", "V", "VI", "VII"];
+            const romans = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
             document.getElementById('clue-progress').innerText = `Discovery ${romans[index]} of ${romans[huntData.length-1]}`;
             document.getElementById('clue-hint').innerText = data.hint;
             showStage('clue');
