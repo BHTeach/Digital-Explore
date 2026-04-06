@@ -1,1 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>British Hills English Quest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* ==========================================
+           🎬 CSS ANIMATIONS (The "Visual" Element)
+           ========================================== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translate(-50%, 20px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.95) translateY(10px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
 
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.6s ease-out forwards; }
+        .animate-pop-in { animation: popIn 0.4s ease-out forwards; }
+        
+        /* Prevent selection highlighting on mobile */
+        body { -webkit-user-select: none; user-select: none; overflow: hidden; background-color: #000; }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-900 h-[100dvh] w-full">
+
+    <div id="app" class="w-full h-full relative"></div>
+
+    <script>
+        // ==========================================
+        // 🎨 ASSET CONFIGURATION
+        // ==========================================
+        const ASSETS = {
+            backgrounds: {
+                manorHouse: "assets/manorhouse.gif", // Updated to your lowercase folder/file
+                tearoom: "",
+                pub: "",
+            },
+            characters: {
+                receptionist: "",
+                waiter: "",
+                snookerPlayer: ""
+            }
+        };
+
+        // ==========================================
+        // 📖 STORY & DIALOGUE DATA
+        // ==========================================
+        const STORY = {
+            start: {
+                bg: 'manorHouse', char: 'receptionist', bgColor: 'bg-slate-800', charColor: 'bg-emerald-600',
+                dialogue: [
+                    { speaker: 'Ms. Davies', text: 'Welcome to British Hills! We hope you are enjoying your stay in our little slice of Britain.' },
+                    { speaker: 'Ms. Davies', text: 'Actually, we have a slight emergency. One of the Earl\'s antique teacups has gone missing!' },
+                    { speaker: 'Ms. Davies', text: 'We are very busy preparing for an English culture lesson. Could you please help us look for it?' }
+                ],
+                choices: [
+                    { text: '"Yes, I would be happy to help."', next: 'tearoom', points: 10 },
+                    { text: '"Yes, I want to find."', next: 'tearoom', points: 0 }
+                ]
+            },
+            tearoom: {
+                bg: 'tearoom', char: 'waiter', bgColor: 'bg-orange-100', charColor: 'bg-blue-600',
+                dialogue: [
+                    { speaker: 'Waiter', text: 'Hello there! Welcome to the Ascot Tearoom.' },
+                    { speaker: 'Waiter', text: 'A missing teacup? Oh dear, I haven\'t seen it in here.' },
+                    { speaker: 'Waiter', text: 'But before you go looking elsewhere, would you like something to drink?' }
+                ],
+                choices: [
+                    { text: '"I want tea."', next: 'tearoom_clue', points: 0 },
+                    { text: '"May I have some tea, please?"', next: 'tearoom_clue', points: 10 }
+                ]
+            },
+            tearoom_clue: {
+                bg: 'tearoom', char: 'waiter', bgColor: 'bg-orange-100', charColor: 'bg-blue-600',
+                dialogue: [
+                    { speaker: 'Waiter', text: 'Certainly! Here is some of our finest Earl Grey.' },
+                    { speaker: 'Waiter', text: 'By the way, I did see a guest carrying a shiny cup towards The Falstaff pub earlier.' },
+                    { speaker: 'Waiter', text: 'They mentioned they were going to play Snooker. You should check there!' }
+                ],
+                nextScene: 'pub'
+            },
+            pub: {
+                bg: 'pub', char: 'snookerPlayer', bgColor: 'bg-amber-900', charColor: 'bg-red-700',
+                dialogue: [
+                    { speaker: 'Guest', text: 'Hello! Fancy a game of snooker?' },
+                    { speaker: 'Guest', text: 'Oh, you are looking for this antique teacup? I found it on a table and was keeping it safe.' },
+                    { speaker: 'Guest', text: 'I can hand it over, but let\'s practice our manners. How do you ask for it correctly?' }
+                ],
+                choices: [
+                    { text: '"Give me the cup now."', next: 'evaluate', points: 0 },
+                    { text: '"Could you please give it to me?"', next: 'evaluate', points: 10 }
+                ]
+            },
+            success: {
+                bg: 'manorHouse', char: 'receptionist', bgColor: 'bg-slate-800', charColor: 'bg-emerald-600',
+                dialogue: [
+                    { speaker: 'Ms. Davies', text: 'You found the teacup! Thank you so much for your excellent help.' },
+                    { speaker: 'Ms. Davies', text: 'Your English is wonderful, and your manners are impeccable. A true Lord or Lady!' },
+                    { speaker: 'Ms. Davies', text: 'Please show the next screen to the Reception Desk to claim your special prize.' }
+                ],
+                nextScene: 'prize'
+            },
+            try_again: {
+                bg: 'manorHouse', char: 'receptionist', bgColor: 'bg-slate-800', charColor: 'bg-emerald-600',
+                dialogue: [
+                    { speaker: 'Ms. Davies', text: 'You found the teacup! Thank you.' },
+                    { speaker: 'Ms. Davies', text: 'However, remember that in Britain, using polite phrases like "please", "may I", and "would you" is very important.' },
+                    { speaker: 'Ms. Davies', text: 'Why don\'t you try again and practice your polite English? I know you can do it!' }
+                ],
+                nextScene: 'start_over'
+            }
+        };
+
+        // ==========================================
+        // 🚀 GAME STATE & LOGIC
+        // ==========================================
+        let currentScene = 'title';
+        let dialogueIndex = 0;
+        let score = 0;
+        let isClaimed = false;
+
+        function startGame() {
+            currentScene = 'start';
+            dialogueIndex = 0;
+            render();
+        }
+
+        function resetGame() {
+            currentScene = 'title';
+            dialogueIndex = 0;
+            score = 0;
+            isClaimed = false;
+            render();
+        }
+
+        function claimPrize() {
+            isClaimed = true;
+            render();
+        }
+
+        function nextDialogue() {
+            const scene = STORY[currentScene];
+            if (dialogueIndex < scene.dialogue.length - 1) {
+                dialogueIndex++;
+                render();
+            } else if (scene.nextScene) {
+                if (scene.nextScene === 'start_over') {
+                    resetGame();
+                } else {
+                    currentScene = scene.nextScene;
+                    dialogueIndex = 0;
+                    render();
+                }
+            }
+        }
+
+        function makeChoice(nextScene, points) {
+            score += points;
+            
+            if (nextScene === 'evaluate') {
+                if (score >= 30) {
+                    currentScene = 'success';
+                } else {
+                    currentScene = 'try_again';
+                }
+            } else {
+                currentScene = nextScene;
+            }
+            
+            dialogueIndex = 0;
+            render();
+        }
+
+        // ==========================================
+        // 🖼️ RENDERING ENGINE
+        // ==========================================
+        function render() {
+            const app = document.getElementById('app');
+            let html = '';
+
+            // --- TITLE SCREEN ---
+            if (currentScene === 'title') {
+                html = `
+                    <div class="w-full h-full bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden animate-fade-in">
+                        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500 via-transparent to-transparent"></div>
+                        <div class="z-10 bg-black/40 p-8 rounded-2xl border border-white/10 backdrop-blur-md shadow-2xl w-full max-w-md animate-pop-in">
+                            <h2 class="text-amber-400 font-serif text-sm tracking-widest uppercase mb-3">British Hills English Quest</h2>
+                            <h1 class="text-5xl font-bold mb-6 font-serif leading-tight drop-shadow-md">The Missing<br/>Teacup</h1>
+                            <p class="text-gray-300 mb-8 mx-auto leading-relaxed">
+                                Practice your English and help the staff find the Earl's missing antique. Choose the most polite English responses to win a prize!
+                            </p>
+                            <button onclick="startGame()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform transform active:scale-95 text-lg w-full">
+                                Start Quest
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } 
+            // --- PRIZE SCREEN ---
+            else if (currentScene === 'prize') {
+                html = `
+                    <div class="w-full h-full bg-gradient-to-b from-amber-600 to-amber-900 text-white flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+                        <svg class="w-24 h-24 mb-6 text-yellow-300 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3z"></path></svg>
+                        <h1 class="text-4xl font-bold mb-2 font-serif">Congratulations!</h1>
+                        <p class="text-xl mb-8">You completed the quest with perfect English manners.</p>
+                        
+                        <div class="bg-white/10 p-6 rounded-xl backdrop-blur-md border border-white/30 mb-8 w-full max-w-sm shadow-xl">
+                            <p class="text-sm uppercase tracking-widest text-amber-200 mb-2 font-bold">Staff Instructions</p>
+                            <p class="font-medium leading-relaxed">Please show this screen to the staff at the Manor House Reception Desk to claim your prize.</p>
+                        </div>
+
+                        ${!isClaimed ? `
+                            <button onclick="claimPrize()" class="bg-green-600 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:bg-green-500 transition-transform transform active:scale-95 border-2 border-green-400">
+                                Staff Use Only: Mark as Claimed
+                            </button>
+                        ` : `
+                            <div class="bg-black/40 px-8 py-4 rounded-full border-2 border-green-400 text-green-300 font-bold text-2xl animate-pulse">
+                                Prize Claimed!
+                            </div>
+                        `}
+
+                        <button onclick="resetGame()" class="mt-12 text-amber-200 hover:text-white transition-colors underline flex items-center gap-2 font-medium">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Play Again
+                        </button>
+                    </div>
+                `;
+            } 
+            // --- ACTIVE SCENE ---
+            else {
+                const scene = STORY[currentScene];
+                const currentLine = scene.dialogue[dialogueIndex];
+                const isLastLine = dialogueIndex === scene.dialogue.length - 1;
+                const hasChoices = isLastLine && scene.choices && scene.choices.length > 0;
+                
+                const bgImage = ASSETS.backgrounds[scene.bg];
+                const charImage = ASSETS.characters[scene.char];
+
+                // Render Background
+                const bgHtml = bgImage 
+                    ? `<img src="${bgImage}" class="absolute inset-0 w-full h-full object-cover animate-fade-in" />`
+                    : `<div class="absolute inset-0 ${scene.bgColor} flex flex-col items-center justify-center opacity-80 animate-fade-in">
+                         <div class="text-white/30 text-4xl font-bold uppercase tracking-widest mb-4 text-center px-4">Background</div>
+                         <div class="bg-black/60 px-6 py-2 rounded-full text-white font-mono shadow-lg">${scene.bg}</div>
+                       </div>`;
+
+                // Render Character
+                const charHtml = charImage
+                    ? `<img src="${charImage}" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 max-w-md h-[70%] object-contain animate-slide-up" />`
+                    : `<div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[60%] max-w-xs h-[65%] ${scene.charColor} rounded-t-full flex flex-col items-center justify-start pt-16 shadow-2xl border-4 border-b-0 border-white/20 animate-slide-up">
+                         <div class="text-white/50 text-xl font-bold uppercase tracking-widest mb-2">Sprite</div>
+                         <div class="bg-black/50 px-4 py-1 rounded text-white font-mono text-sm shadow-md">${scene.char}</div>
+                       </div>`;
+
+                // Render Choices
+                let choicesHtml = '';
+                if (hasChoices) {
+                    choicesHtml = `<div class="flex flex-col gap-3 mt-4">`;
+                    scene.choices.forEach(choice => {
+                        choicesHtml += `
+                            <button onclick="makeChoice('${choice.next}', ${choice.points})" class="w-full text-left bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 p-4 rounded-xl transition-colors font-medium text-blue-900 flex items-center justify-between group shadow-sm active:bg-blue-200">
+                                <span class="pr-4">${choice.text}</span>
+                                <svg class="w-6 h-6 text-blue-400 group-hover:text-blue-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        `;
+                    });
+                    choicesHtml += `</div>`;
+                } else {
+                    choicesHtml = `
+                        <div class="flex justify-end mt-2">
+                            <button onclick="nextDialogue()" class="bg-amber-600 hover:bg-amber-500 text-white px-8 py-3 rounded-xl flex items-center gap-2 font-bold transition-transform transform active:scale-95 shadow-md border border-amber-700">
+                                Next <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // Compile Active Scene HTML
+                html = `
+                    <div class="w-full h-full relative">
+                        ${bgHtml}
+                        ${charHtml}
+                        
+                        <div class="absolute top-4 right-4 flex gap-2 z-20 animate-fade-in">
+                            <div class="bg-black/60 text-amber-300 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 backdrop-blur-md border border-amber-500/30 shadow-lg">
+                                <svg class="w-4 h-4 fill-amber-300" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                ${score} pts
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-4 left-4 right-4 z-20 flex flex-col items-center">
+                            <div class="w-full max-w-2xl relative bg-white/95 text-gray-900 p-5 pt-8 rounded-xl shadow-2xl border-2 border-amber-700 backdrop-blur-sm animate-pop-in">
+                                <div class="absolute -top-4 left-4 bg-gradient-to-r from-blue-900 to-blue-800 text-white px-5 py-1.5 rounded-md shadow-md border border-amber-500 font-bold tracking-wide">
+                                    ${currentLine.speaker}
+                                </div>
+                                <div class="text-[1.1rem] leading-relaxed mb-4 min-h-[4rem] font-medium text-gray-800">
+                                    ${currentLine.text}
+                                </div>
+                                ${choicesHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            app.innerHTML = html;
+        }
+
+        // Initialize the game on load
+        window.onload = render;
+    </script>
+</body>
+</html>
