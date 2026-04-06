@@ -47,6 +47,7 @@
             },
             characters: {
                 receptionist: "assets/receptionist.gif",
+                receptionist2: "assets/receptionist2.gif",
                 waiter: "assets/waiter.gif",
                 snookerPlayer: "assets/snookerplayer.gif"
             }
@@ -60,8 +61,8 @@
                 bg: 'manorHouse', char: 'receptionist', bgColor: 'bg-slate-800', charColor: 'bg-emerald-600',
                 dialogue: [
                     { speaker: 'Ms. Davies', text: 'Welcome to British Hills! We hope you are enjoying your stay in our little slice of Britain.' },
-                    { speaker: 'Ms. Davies', text: 'Actually, we have a slight emergency. One of the Earl\'s antique teacups has gone missing!' },
-                    { speaker: 'Ms. Davies', text: 'We are very busy preparing for an English culture lesson. Could you please help us look for it?' }
+                    { speaker: 'Ms. Davies', text: 'Actually, we have a slight emergency. One of the Earl\'s antique teacups has gone missing!', char: 'receptionist2' },
+                    { speaker: 'Ms. Davies', text: 'We are very busy preparing for an English culture lesson. Could you please help us look for it?', char: 'receptionist2' }
                 ],
                 choices: [
                     { text: '"Yes, I would be happy to help."', next: 'tearoom', points: 10 },
@@ -243,7 +244,10 @@
                 const hasChoices = isLastLine && scene.choices && scene.choices.length > 0;
                 
                 const bgImage = ASSETS.backgrounds[scene.bg];
-                const charImage = ASSETS.characters[scene.char];
+                
+                // Determine which character sprite to use for this specific line
+                const currentCharKey = currentLine.char || scene.char;
+                const charImage = ASSETS.characters[currentCharKey];
 
                 // Render Background
                 const bgHtml = bgImage 
@@ -258,7 +262,7 @@
                     ? `<img src="${charImage}" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 max-w-md h-[70%] object-contain animate-slide-up" />`
                     : `<div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[60%] max-w-xs h-[65%] ${scene.charColor} rounded-t-full flex flex-col items-center justify-start pt-16 shadow-2xl border-4 border-b-0 border-white/20 animate-slide-up">
                          <div class="text-white/50 text-xl font-bold uppercase tracking-widest mb-2">Sprite</div>
-                         <div class="bg-black/50 px-4 py-1 rounded text-white font-mono text-sm shadow-md">${scene.char}</div>
+                         <div class="bg-black/50 px-4 py-1 rounded text-white font-mono text-sm shadow-md">${currentCharKey}</div>
                        </div>`;
 
                 // Render Choices
