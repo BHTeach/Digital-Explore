@@ -249,18 +249,33 @@
                 const currentCharKey = currentLine.char || scene.char;
                 const charImage = ASSETS.characters[currentCharKey];
 
+                // Determine if we need to animate based on state changes
+                const isNewScene = dialogueIndex === 0;
+                let isNewChar = isNewScene;
+                if (dialogueIndex > 0) {
+                    const prevCharKey = scene.dialogue[dialogueIndex - 1].char || scene.char;
+                    if (currentCharKey !== prevCharKey) {
+                        isNewChar = true;
+                    }
+                }
+
+                const bgAnim = isNewScene ? 'animate-fade-in' : '';
+                const charAnim = isNewChar ? 'animate-slide-up' : '';
+                const uiAnim = isNewScene ? 'animate-fade-in' : '';
+                const boxAnim = isNewScene ? 'animate-pop-in' : '';
+
                 // Render Background
                 const bgHtml = bgImage 
-                    ? `<img src="${bgImage}" class="absolute inset-0 w-full h-full object-cover animate-fade-in" />`
-                    : `<div class="absolute inset-0 ${scene.bgColor} flex flex-col items-center justify-center opacity-80 animate-fade-in">
+                    ? `<img src="${bgImage}" class="absolute inset-0 w-full h-full object-cover ${bgAnim}" />`
+                    : `<div class="absolute inset-0 ${scene.bgColor} flex flex-col items-center justify-center opacity-80 ${bgAnim}">
                          <div class="text-white/30 text-4xl font-bold uppercase tracking-widest mb-4 text-center px-4">Background</div>
                          <div class="bg-black/60 px-6 py-2 rounded-full text-white font-mono shadow-lg">${scene.bg}</div>
                        </div>`;
 
                 // Render Character
                 const charHtml = charImage
-                    ? `<img src="${charImage}" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 max-w-md h-[70%] object-contain animate-slide-up" />`
-                    : `<div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[60%] max-w-xs h-[65%] ${scene.charColor} rounded-t-full flex flex-col items-center justify-start pt-16 shadow-2xl border-4 border-b-0 border-white/20 animate-slide-up">
+                    ? `<img src="${charImage}" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 max-w-md h-[70%] object-contain ${charAnim}" />`
+                    : `<div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[60%] max-w-xs h-[65%] ${scene.charColor} rounded-t-full flex flex-col items-center justify-start pt-16 shadow-2xl border-4 border-b-0 border-white/20 ${charAnim}">
                          <div class="text-white/50 text-xl font-bold uppercase tracking-widest mb-2">Sprite</div>
                          <div class="bg-black/50 px-4 py-1 rounded text-white font-mono text-sm shadow-md">${currentCharKey}</div>
                        </div>`;
@@ -294,7 +309,7 @@
                         ${bgHtml}
                         ${charHtml}
                         
-                        <div class="absolute top-4 right-4 flex gap-2 z-20 animate-fade-in">
+                        <div class="absolute top-4 right-4 flex gap-2 z-20 ${uiAnim}">
                             <div class="bg-black/60 text-amber-300 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 backdrop-blur-md border border-amber-500/30 shadow-lg">
                                 <svg class="w-4 h-4 fill-amber-300" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                                 ${score} pts
@@ -302,7 +317,7 @@
                         </div>
 
                         <div class="absolute bottom-4 left-4 right-4 z-20 flex flex-col items-center">
-                            <div class="w-full max-w-2xl relative bg-white/95 text-gray-900 p-5 pt-8 rounded-xl shadow-2xl border-2 border-amber-700 backdrop-blur-sm animate-pop-in">
+                            <div class="w-full max-w-2xl relative bg-white/95 text-gray-900 p-5 pt-8 rounded-xl shadow-2xl border-2 border-amber-700 backdrop-blur-sm ${boxAnim}">
                                 <div class="absolute -top-4 left-4 bg-gradient-to-r from-blue-900 to-blue-800 text-white px-5 py-1.5 rounded-md shadow-md border border-amber-500 font-bold tracking-wide">
                                     ${currentLine.speaker}
                                 </div>
