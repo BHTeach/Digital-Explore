@@ -44,12 +44,18 @@
                 manorHouse: "assets/manorhouse.jpg",
                 tearoom: "assets/tearoom.jpg",
                 snookerRoom: "assets/snooker.jpg",
+                library: "assets/library.jpg",
+                refectory: "assets/refectory.jpg"
             },
             characters: {
                 receptionist: "assets/receptionist.gif",
                 receptionist2: "assets/receptionist2.gif",
                 waiter: "assets/waiter.gif",
-                snookerPlayer: "assets/snookerplayer.gif"
+                snookerPlayer: "assets/snookerplayer.gif",
+                snookerPlayer2: "assets/snookerplayer2.gif",
+                librarian: "assets/librarian.gif",
+                chef: "assets/chef.gif",
+                chef2: "assets/chef2.gif"
             }
         };
 
@@ -61,13 +67,20 @@
                 bg: 'manorHouse', char: 'receptionist', bgColor: 'bg-slate-800', charColor: 'bg-emerald-600',
                 dialogue: [
                     { speaker: 'Ms. Davies', text: 'Welcome to British Hills! We hope you are enjoying your stay in our little slice of Britain.' },
-                    { speaker: 'Ms. Davies', text: 'Actually, we have a slight emergency. One of the Earl\'s antique teacups has gone missing!', char: 'receptionist2' },
+                    { speaker: 'Ms. Davies', text: 'Actually, we have a slight emergency. One of the Lord\'s antique teacups has gone missing!', char: 'receptionist2' },
                     { speaker: 'Ms. Davies', text: 'We are very busy preparing for an English culture lesson. Could you please help us look for it?', char: 'receptionist2' }
                 ],
                 choices: [
-                    { text: '"Yes, I would be happy to help."', next: 'tearoom', points: 10 },
-                    { text: '"Yes, I want to find."', next: 'tearoom', points: 0 }
+                    { text: '"Yes, I would be happy to help."', next: 'start_reply', points: 10 },
+                    { text: '"Yes, I want to find."', next: 'start_reply', points: 0 }
                 ]
+            },
+            start_reply: {
+                bg: 'manorHouse', char: 'receptionist2', bgColor: 'bg-slate-800', charColor: 'bg-emerald-600',
+                dialogue: [
+                    { speaker: 'Ms. Davies', text: 'Thank you so much! Please go to the Ascot Tearoom first, because that\'s where the Lord\'s antique teacups are usually kept.' }
+                ],
+                nextScene: 'tearoom'
             },
             tearoom: {
                 bg: 'tearoom', char: 'waiter', bgColor: 'bg-orange-100', charColor: 'bg-blue-600',
@@ -77,8 +90,8 @@
                     { speaker: 'Waiter', text: 'But before you go looking elsewhere, would you like something to drink?' }
                 ],
                 choices: [
-                    { text: '"I want tea."', next: 'tearoom_clue', points: 0 },
-                    { text: '"May I have some tea, please?"', next: 'tearoom_clue', points: 10 }
+                    { text: '"May I have some tea, please?"', next: 'tearoom_clue', points: 10 },
+                    { text: '"I want tea."', next: 'tearoom_clue', points: 0 }
                 ]
             },
             tearoom_clue: {
@@ -94,8 +107,49 @@
                 bg: 'snookerRoom', char: 'snookerPlayer', bgColor: 'bg-amber-900', charColor: 'bg-red-700',
                 dialogue: [
                     { speaker: 'Guest', text: 'Hello! Fancy a game of snooker?' },
-                    { speaker: 'Guest', text: 'Oh, you are looking for this antique teacup? I found it on a table and was keeping it safe.' },
-                    { speaker: 'Guest', text: 'I can hand it over, but let\'s practice our manners. How do you ask for it correctly?' }
+                    { speaker: 'Guest', text: 'Oh, you are looking for an antique teacup?' },
+                    { speaker: 'Guest', text: 'I haven\'t seen it, but I can help you look. How do you ask for my help?' }
+                ],
+                choices: [
+                    { text: '"Help me."', next: 'snookerRoom_clue', points: 0 },
+                    { text: '"Could you please help me?"', next: 'snookerRoom_clue', points: 10 }
+                ]
+            },
+            snookerRoom_clue: {
+                bg: 'snookerRoom', char: 'snookerPlayer', bgColor: 'bg-amber-900', charColor: 'bg-red-700',
+                dialogue: [
+                    { speaker: 'Guest', text: 'Of course! Actually, now that I think about it...', char: 'snookerPlayer2' },
+                    { speaker: 'Guest', text: 'I did see someone carrying a very fancy cup into the Library.', char: 'snookerPlayer2' },
+                    { speaker: 'Guest', text: 'Maybe you should check there?', char: 'snookerPlayer2' }
+                ],
+                nextScene: 'library'
+            },
+            library: {
+                bg: 'library', char: 'librarian', bgColor: 'bg-stone-800', charColor: 'bg-purple-700',
+                dialogue: [
+                    { speaker: 'Librarian', text: 'Welcome to the Library. Please keep your voice down.' },
+                    { speaker: 'Librarian', text: 'A teacup? Yes, a student was using it while studying, but they just left.' },
+                    { speaker: 'Librarian', text: 'If you want to know where they went, how should you ask?' }
+                ],
+                choices: [
+                    { text: '"Could you tell me where they went, please?"', next: 'library_clue', points: 10 },
+                    { text: '"Where did they go?"', next: 'library_clue', points: 0 }
+                ]
+            },
+            library_clue: {
+                bg: 'library', char: 'librarian', bgColor: 'bg-stone-800', charColor: 'bg-purple-700',
+                dialogue: [
+                    { speaker: 'Librarian', text: 'Much better. They said they were hungry and went to the Refectory to eat.' },
+                    { speaker: 'Librarian', text: 'You should hurry and catch them!' }
+                ],
+                nextScene: 'refectory'
+            },
+            refectory: {
+                bg: 'refectory', char: 'chef', bgColor: 'bg-red-900', charColor: 'bg-orange-500',
+                dialogue: [
+                    { speaker: 'Chef', text: 'Hello there! Welcome to the Refectory.' },
+                    { speaker: 'Chef', text: 'Oh, you are looking for this antique teacup? I found it on a table. Don\'t worry, it\'s fine!', char: 'chef2' },
+                    { speaker: 'Chef', text: 'I can hand it over, but let\'s practice our manners. How do you ask for it correctly?', char: 'chef' }
                 ],
                 choices: [
                     { text: '"Give me the cup now."', next: 'evaluate', points: 0 },
@@ -169,7 +223,7 @@
             score += points;
             
             if (nextScene === 'evaluate') {
-                if (score >= 30) {
+                if (score >= 50) {
                     currentScene = 'success';
                 } else {
                     currentScene = 'try_again';
