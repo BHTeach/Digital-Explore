@@ -47,6 +47,7 @@
                 snookerPlayer: "assets/snookerplayer.gif",
                 snookerPlayer2: "assets/snookerplayer2.gif",
                 librarian: "assets/librarian.gif",
+                librarian2: "assets/librarian2.gif",
                 chef: "assets/chef.gif",
                 chef2: "assets/chef2.gif"
             }
@@ -124,9 +125,9 @@
             snookerRoom: {
                 bg: 'snookerRoom', char: 'snookerPlayer', bgColor: 'bg-amber-900', charColor: 'bg-red-700',
                 dialogue: [
-                    { speaker: 'Guest', text: 'Hello! Fancy a game of [Snooker]?' },
-                    { speaker: 'Guest', text: 'Oh, you are looking for an [antique] teacup?' },
-                    { speaker: 'Guest', text: 'I haven\'t seen it, but I can help you look. Put the words in order to ask for my help!' }
+                    { speaker: 'Tom', text: 'Hello! Fancy a game of [Snooker]?' },
+                    { speaker: 'Tom', text: 'Oh, you are looking for an [antique] teacup?' },
+                    { speaker: 'Tom', text: 'I haven\'t seen it, but I can help you look. Put the words in order to ask for my help!' }
                 ],
                 builder: {
                     shuffled: ["help", "me?", "Could", "please", "you"],
@@ -139,25 +140,25 @@
             snookerRoom_fail: {
                 bg: 'snookerRoom', char: 'snookerPlayer2', bgColor: 'bg-amber-900', charColor: 'bg-red-700',
                 dialogue: [
-                    { speaker: 'Guest', text: 'Ah, I think you meant to say: "Could you please help me?"' }
+                    { speaker: 'Tom', text: 'Ah, I think you meant to say: "Could you please help me?"' }
                 ],
                 nextScene: 'snookerRoom_clue'
             },
             snookerRoom_clue: {
                 bg: 'snookerRoom', char: 'snookerPlayer2', bgColor: 'bg-amber-900', charColor: 'bg-red-700',
                 dialogue: [
-                    { speaker: 'Guest', text: 'Of course I can help! Actually, now that I think about it...' },
-                    { speaker: 'Guest', text: 'I did see someone carrying a very fancy cup into the Library.' },
-                    { speaker: 'Guest', text: 'Maybe you should check there?' }
+                    { speaker: 'Tom', text: 'Of course I can help! Actually, now that I think about it...' },
+                    { speaker: 'Tom', text: 'I did see someone carrying a very fancy cup into the Library.' },
+                    { speaker: 'Tom', text: 'Maybe you should check there?' }
                 ],
                 nextScene: 'library'
             },
             library: {
                 bg: 'library', char: 'librarian', bgColor: 'bg-stone-800', charColor: 'bg-purple-700',
                 dialogue: [
-                    { speaker: 'Librarian', text: 'Welcome to the Library. Please keep your voice down.' },
-                    { speaker: 'Librarian', text: 'A teacup? Yes, a student was using it while studying, but they just left.' },
-                    { speaker: 'Librarian', text: 'If you want to know where they went, how should you ask?' }
+                    { speaker: 'Kimberley', text: 'Welcome to the Library. Please keep your voice down.' },
+                    { speaker: 'Kimberley', text: 'A teacup? Yes, a student was using it while studying, but they just left.' },
+                    { speaker: 'Kimberley', text: 'If you want to know where they went, how should you ask?' }
                 ],
                 choices: [
                     { text: '"Could you tell me where they went, please?"', next: 'library_clue', points: 10 },
@@ -165,19 +166,19 @@
                 ]
             },
             library_clue: {
-                bg: 'library', char: 'librarian', bgColor: 'bg-stone-800', charColor: 'bg-purple-700',
+                bg: 'library', char: 'librarian2', bgColor: 'bg-stone-800', charColor: 'bg-purple-700',
                 dialogue: [
-                    { speaker: 'Librarian', text: 'Well done. They said they were hungry and went to the [Refectory] to eat.' },
-                    { speaker: 'Librarian', text: 'You should hurry and catch them!' }
+                    { speaker: 'Kimberley', text: 'Well done. They said they were hungry and went to the [Refectory] to eat.' },
+                    { speaker: 'Kimberley', text: 'You should hurry and catch them!' }
                 ],
                 nextScene: 'refectory'
             },
             refectory: {
                 bg: 'refectory', char: 'chef', bgColor: 'bg-red-900', charColor: 'bg-orange-500',
                 dialogue: [
-                    { speaker: 'Chef', text: 'Hello there! Welcome to the [Refectory].' },
-                    { speaker: 'Chef', text: 'Oh, you are looking for this [antique] teacup? I found it on a table. Don\'t worry, it\'s fine!', char: 'chef2' },
-                    { speaker: 'Chef', text: 'I can hand it over, but let\'s practise our manners. Form the correct sentence to ask for it!', char: 'chef' }
+                    { speaker: 'Moja', text: 'Hello there! Welcome to the [Refectory].' },
+                    { speaker: 'Moja', text: 'Oh, you are looking for this [antique] teacup? I found it on a table. Don\'t worry, it\'s fine!', char: 'chef2' },
+                    { speaker: 'Moja', text: 'I can hand it over, but let\'s practise our manners. Form the correct sentence to ask for it!', char: 'chef' }
                 ],
                 builder: {
                     shuffled: ["please", "it", "to", "give", "me?", "Could", "you"],
@@ -190,8 +191,8 @@
             refectory_fail: {
                 bg: 'refectory', char: 'chef2', bgColor: 'bg-red-900', charColor: 'bg-orange-500',
                 dialogue: [
-                    { speaker: 'Chef', text: 'Actually, you mean "Could you please give it to me?"' },
-                    { speaker: 'Chef', text: 'But you tried your best! Here is the teacup.' }
+                    { speaker: 'Moja', text: 'Actually, you mean "Could you please give it to me?"' },
+                    { speaker: 'Moja', text: 'But you tried your best! Here is the teacup.' }
                 ],
                 nextScene: 'evaluate'
             },
