@@ -42,11 +42,6 @@
                     <p class="text-xs font-bold uppercase tracking-widest text-stone-500 mb-1">Investigation Progress</p>
                     <div class="text-3xl font-bold text-[#8b0000]"><span id="progress-text">0 / 40</span></div>
                 </div>
-                <div class="space-x-2">
-                    <button onclick="resetGame()" class="text-sm bg-[#8b0000] hover:bg-[#6b0000] text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
-                        Reset All
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -101,7 +96,6 @@
 
     <!-- Application Logic -->
     <script>
-        // --- DATA & VALIDATION RULES ---
         const correctAnswers = {
             amy: {
                 country: { options: [{ text: "New Zealand", check: v => v.includes('zealand') || v.includes('nz') }] },
@@ -198,21 +192,14 @@
 
         const teachers = ['amy', 'donovan', 'emma', 'jessica', 'randy', 'shannon', 'tom', 'zain'];
         const fields = ['country', 'birthday', 'likes', 'color', 'dislikes'];
-        const fieldLabels = {
-            country: "Country:",
-            birthday: "Birthday:",
-            likes: "Likes:",
-            color: "Fav colour:",
-            dislikes: "Doesn't like:"
-        };
-
+        const fieldLabels = { country: "Country:", birthday: "Birthday:", likes: "Likes:", color: "Fav colour:", dislikes: "Doesn't like:" };
         const TOTAL_FIELDS = 40;
         let completedFields = 0;
         let isSolved = false;
         let isRestoring = false;
         window.stampData = null;
+        let saveTimeout;
 
-        // --- DOM INITIALIZATION ---
         const gridContainer = document.getElementById('teachers-grid');
         const progressText = document.getElementById('progress-text');
         const stampBox = document.getElementById('stamp-box');
@@ -221,211 +208,98 @@
 
         function initDOM() {
             gridContainer.innerHTML = '';
-            
             teachers.forEach(t => {
                 const card = document.createElement('div');
                 card.className = "bg-white p-5 border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] rounded flex flex-col transition-all";
-
-                let html = `<h3 class="text-2xl font-serif font-bold text-[#8b0000] mb-4 border-b-2 border-stone-200 pb-2 capitalize flex justify-between items-center">
-                                ${t}
-                                <img src="assets/${t}.jpg" alt="${t}" class="w-12 h-12 object-cover rounded-md border border-stone-300 shadow-sm shrink-0 bg-stone-100" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'48\\' height=\\'48\\'><rect width=\\'48\\' height=\\'48\\' fill=\\'%23f5f5f4\\' /><path d=\\'M24 10a6 6 0 100 12 6 6 0 000-12zm-8 19c0-3.3 5.3-5 8-5s8 1.7 8 5v3H16v-3z\\' fill=\\'%23a8a29e\\'/></svg>'" />
-                            </h3>`;
-                html += `<div class="space-y-3 flex-1">`;
-
+                let html = `<h3 class="text-2xl font-serif font-bold text-[#8b0000] mb-4 border-b-2 border-stone-200 pb-2 capitalize flex justify-between items-center">${t}<img src="assets/${t}.jpg" alt="${t}" class="w-12 h-12 object-cover rounded-md border border-stone-300 shadow-sm shrink-0 bg-stone-100" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'48\\' height=\\'48\\'><rect width=\\'48\\' height=\\'48\\' fill=\\'%23f5f5f4\\' /><path d=\\'M24 10a6 6 0 100 12 6 6 0 000-12zm-8 19c0-3.3 5.3-5 8-5s8 1.7 8 5v3H16v-3z\\' fill=\\'%23a8a29e\\'/></svg>'" /></h3><div class="space-y-3 flex-1">`;
                 fields.forEach(f => {
-                    html += `
-                        <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-2">
-                            <label class="text-xs font-bold text-stone-500 uppercase tracking-wider w-full md:w-1/3 shrink-0">${fieldLabels[f]}</label>
-                            <div class="relative w-full md:w-2/3">
-                                <input type="text" data-teacher="${t}" data-field="${f}" autocomplete="off"
-                                       class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1.5 text-sm font-bold text-stone-800 transition-colors focus:border-[#8b0000] rounded-t-sm" />
-                                <i class="fa-solid fa-check text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 transition-opacity duration-300" id="icon-${t}-${f}"></i>
-                            </div>
-                        </div>
-                    `;
+                    html += `<div class="relative flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-2"><label class="text-xs font-bold text-stone-500 uppercase tracking-wider w-full md:w-1/3 shrink-0">${fieldLabels[f]}</label><div class="relative w-full md:w-2/3"><input type="text" data-teacher="${t}" data-field="${f}" autocomplete="off" class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1.5 text-sm font-bold text-stone-800 transition-colors focus:border-[#8b0000] rounded-t-sm" /><i class="fa-solid fa-check text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 transition-opacity duration-300" id="icon-${t}-${f}"></i></div></div>`;
                 });
-
-                html += `</div>`;
-                card.innerHTML = html;
+                card.innerHTML = html + `</div>`;
                 gridContainer.appendChild(card);
             });
-
-            // Attach listeners to newly created inputs
-            document.querySelectorAll('input').forEach(input => {
-                input.addEventListener('input', handleInput);
-            });
-            
-            updateProgress();
+            document.querySelectorAll('input').forEach(input => input.addEventListener('input', handleInput));
         }
 
-        // --- LOCAL STORAGE SAVE & RESTORE ---
-        
-        let saveTimeout;
         function triggerSave() {
             if (isRestoring) return;
-            
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(() => {
-                const inputs = {
-                    'student-name': document.getElementById('student-name').value || '',
-                    'school-name': document.getElementById('school-name').value || ''
-                };
-                
-                document.querySelectorAll('input[data-teacher]').forEach(input => {
-                    const key = `${input.dataset.teacher}-${input.dataset.field}`;
-                    inputs[key] = input.value;
-                });
-
-                const payload = {
-                    inputs: inputs,
-                    isSolved: isSolved,
-                    stampData: window.stampData || null
-                };
-                
-                try {
-                    localStorage.setItem('bhHeroesState', JSON.stringify(payload));
-                } catch(e) {
-                    console.error("Local storage save failed:", e);
-                }
+                const inputs = { 'student-name': document.getElementById('student-name').value, 'school-name': document.getElementById('school-name').value };
+                document.querySelectorAll('input[data-teacher]').forEach(i => { inputs[`${i.dataset.teacher}-${i.dataset.field}`] = i.value; });
+                localStorage.setItem('bhHeroesState', JSON.stringify({ inputs, isSolved, stampData: window.stampData }));
             }, 500);
         }
 
         function restoreGameState() {
             try {
-                const savedState = localStorage.getItem('bhHeroesState');
-                if (!savedState) return;
-
-                const data = JSON.parse(savedState);
+                const saved = localStorage.getItem('bhHeroesState');
+                if (!saved) return;
+                const data = JSON.parse(saved);
                 isRestoring = true;
-                
                 if (data.inputs) {
-                    const sName = document.getElementById('student-name');
-                    if (sName && data.inputs['student-name']) sName.value = data.inputs['student-name'];
-                    
-                    const schName = document.getElementById('school-name');
-                    if (schName && data.inputs['school-name']) schName.value = data.inputs['school-name'];
-
+                    document.getElementById('student-name').value = data.inputs['student-name'] || '';
+                    document.getElementById('school-name').value = data.inputs['school-name'] || '';
                     document.querySelectorAll('input[data-teacher]').forEach(input => {
-                        const key = `${input.dataset.teacher}-${input.dataset.field}`;
-                        if (data.inputs[key]) {
-                            input.value = data.inputs[key];
-                            
-                            // Re-evaluate to restore checked/green state based on restored value
-                            const val = input.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-                            if (val.length >= 2) {
-                                const config = correctAnswers[input.dataset.teacher][input.dataset.field];
-                                const match = config.options.find(opt => opt.check(val));
-                                if (match) {
-                                    markCorrect(input, input.dataset.teacher, input.dataset.field, match.text, true);
-                                }
+                        const val = data.inputs[`${input.dataset.teacher}-${input.dataset.field}`];
+                        if (val) {
+                            input.value = val;
+                            const checkVal = val.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+                            if (checkVal.length >= 2) {
+                                const match = correctAnswers[input.dataset.teacher][input.dataset.field].options.find(opt => opt.check(checkVal));
+                                if (match) markCorrect(input, input.dataset.teacher, input.dataset.field, match.text, true);
                             }
                         }
                     });
                 }
-
                 updateProgress();
-
                 if (data.isSolved) {
                     isSolved = true;
-                    window.stampData = data.stampData || {
-                        studentName: document.getElementById('student-name').value || 'Anonymous',
-                        dateStr: new Date().toLocaleDateString(),
-                        timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    };
+                    window.stampData = data.stampData;
                     triggerWinUI();
                 }
-
                 isRestoring = false;
-            } catch (e) {
-                console.error("Local storage restore failed:", e);
-                isRestoring = false;
-            }
+            } catch (e) { isRestoring = false; }
         }
 
-        // --- GAME LOGIC ---
         function handleInput(e) {
             const input = e.target;
-            const teacher = input.dataset.teacher;
-            const field = input.dataset.field;
-            
-            triggerSave(); // Save partial text
-            
-            if (!teacher || !field) return; 
-
-            // Normalize input for flexible checking
+            triggerSave();
             const val = input.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-            
             if (val.length < 2) return; 
-
-            const config = correctAnswers[teacher][field];
-            
-            // Evaluates options top to bottom (combo options evaluate first)
-            const match = config.options.find(opt => opt.check(val));
-            
-            if (match) {
-                markCorrect(input, teacher, field, match.text, false);
-            }
+            const match = correctAnswers[input.dataset.teacher][input.dataset.field].options.find(opt => opt.check(val));
+            if (match) markCorrect(input, input.dataset.teacher, input.dataset.field, match.text, false);
         }
 
-        function markCorrect(input, teacher, field, formattedAnswer, fromRestore) {
-            // Replaces the box with the exact individual answer they correctly discovered
-            input.value = formattedAnswer; 
-            input.disabled = true;
-            
-            // Apply success styling
+        function markCorrect(input, teacher, field, formatted, fromRestore) {
+            input.value = formatted; input.disabled = true;
             input.classList.remove('bg-stone-50', 'border-stone-300', 'text-stone-800');
             input.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
-            
-            // Show Checkmark
             const icon = document.getElementById(`icon-${teacher}-${field}`);
-            if(icon) {
-                icon.classList.remove('opacity-0');
-            }
-
+            if(icon) icon.classList.remove('opacity-0');
             completedFields++;
-            
-            if (!fromRestore) {
-                updateProgress();
-                triggerSave();
-            }
+            if (!fromRestore) { updateProgress(); triggerSave(); }
         }
 
         function updateProgress() {
             progressText.innerText = `${completedFields} / ${TOTAL_FIELDS}`;
-            
-            if (completedFields >= TOTAL_FIELDS && !isSolved) {
-                triggerWin();
-            }
+            if (completedFields >= TOTAL_FIELDS && !isSolved) triggerWin();
         }
 
         function triggerWin() {
-            if (isSolved) return;
             isSolved = true;
-            
             const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
             const now = new Date();
-            
-            window.stampData = {
-                studentName: studentName,
-                dateStr: now.toLocaleDateString(),
-                timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-
+            window.stampData = { studentName, dateStr: now.toLocaleDateString(), timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
             triggerWinUI();
             triggerSave();
-
-            // Show Modal after a tiny delay
-            setTimeout(() => {
-                winModal.classList.remove('hidden');
-            }, 600);
+            setTimeout(() => winModal.classList.remove('hidden'), 600);
         }
 
         function triggerWinUI() {
             const sData = window.stampData || { studentName: 'Anonymous', dateStr: '', timeStr: '' };
-
             stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
             stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
-            
             stampBox.innerHTML = `
                 <div class="text-red-600 border-4 border-red-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/95 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
                     <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETE</div>
@@ -438,38 +312,10 @@
             `;
         }
 
-        function resetGame() {
-            completedFields = 0;
-            isSolved = false;
-            window.stampData = null;
-            
-            try {
-                localStorage.removeItem('bhHeroesState');
-            } catch(e) {
-                console.error("Could not clear local storage:", e);
-            }
+        document.getElementById('close-modal-btn').addEventListener('click', () => winModal.classList.add('hidden'));
 
-            document.getElementById('student-name').value = '';
-            document.getElementById('school-name').value = '';
-
-            stampInstruction.textContent = "Complete all 40 facts to earn your stamp.";
-            stampBox.className = "min-h-[8rem] flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
-            stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
-            
-            initDOM();
-            updateProgress();
-        }
-
-        // Close Modal Event
-        document.getElementById('close-modal-btn').addEventListener('click', () => {
-            winModal.classList.add('hidden');
-        });
-
-        // --- STARTUP ---
         initDOM();
         restoreGameState();
-        updateProgress();
-
     </script>
 </body>
 </html>
