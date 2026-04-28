@@ -188,7 +188,7 @@
                 q: "A note was found in the room. Look at Clue A. Who or what is 'Mr Falstaff'?", 
                 options: ["A) A teacher", "B) A pub", "C) A tree"], 
                 correct: 1,
-                clue: { title: "Clue A", text: "Don,<br><br>I left the jewels with 'Mr Falstaff,' by the Manor House.<br><br>T." }
+                clue: { title: "Clue A", text: "Dom,<br><br>I left the jewels with 'Mr Falstaff,' by the Manor House.<br><br>T." }
             },
             { 
                 id: 'q4', num: 4, 
@@ -312,10 +312,10 @@
             const t1 = document.getElementById('deduce-thief-1').value.toLowerCase().replace(/[^a-z]/g, '');
             const t2 = document.getElementById('deduce-thief-2').value.toLowerCase().replace(/[^a-z]/g, '');
             
-            const hasDon = (t1.includes('don') || t2.includes('don'));
+            const hasDom = (t1.includes('dom') || t2.includes('dom'));
             const hasTom = (t1.includes('tom') || t2.includes('tom'));
             
-            if (!hasDon || !hasTom) return triggerFail();
+            if (!hasDom || !hasTom) return triggerFail();
 
             // 3. Check Location Deductions
             const l1 = document.getElementById('deduce-location-1').value.toLowerCase().replace(/[^a-z]/g, '');
