@@ -46,6 +46,14 @@
                 <p class="text-sm font-medium">Do it by yourself in your free time.</p>
                 <p class="text-sm font-medium">When you finish, show your completions stamp at the Manor House Reception to get your prize!</p>
             </div>
+            
+            <div class="flex-1 w-full max-w-sm flex flex-col items-center md:items-end space-y-3">
+                <div class="space-x-2">
+                    <button onclick="resetGame()" class="text-sm bg-black hover:bg-gray-800 text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
+                        Reset All
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="text-center mb-6">
@@ -59,11 +67,11 @@
         <div class="bg-white border-2 border-black p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(0,0,0,1)] max-w-2xl mx-auto">
             <div class="flex-1 flex items-center gap-2">
                 <label for="student-name" class="font-bold uppercase tracking-wider text-gray-700 text-sm">Name:</label>
-                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-gray-50 border-b-2 border-gray-300 outline-none px-2 py-1 font-bold text-black focus:border-black">
+                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-gray-50 border-b-2 border-gray-300 outline-none px-2 py-1 font-bold text-black focus:border-black" oninput="triggerSave()">
             </div>
             <div class="flex-1 flex items-center gap-2">
                 <label for="school-name" class="font-bold uppercase tracking-wider text-gray-700 text-sm">School:</label>
-                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-gray-50 border-b-2 border-gray-300 outline-none px-2 py-1 font-bold text-black focus:border-black">
+                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-gray-50 border-b-2 border-gray-300 outline-none px-2 py-1 font-bold text-black focus:border-black" oninput="triggerSave()">
             </div>
         </div>
 
@@ -172,7 +180,9 @@
         let selectedCell = null; // {r, c}
         let direction = 'across';
         let isSolved = false;
+        let isRestoring = false;
         let cellDOMNodes = []; // 2D array storing references to the cell divs
+        window.stampData = null;
 
         // --- DOM ELEMENTS ---
         const gridContainer = document.getElementById('grid-container');
@@ -322,6 +332,111 @@
             });
         }
 
+        // --- LOCAL STORAGE SAVE & RESTORE ---
+        
+        let saveTimeout;
+        function triggerSave() {
+            if (isRestoring) return;
+            
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const gridVals = [];
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        if (!grid[r][c].isBlack && grid[r][c].value !== '') {
+                            gridVals.push({ r, c, val: grid[r][c].value });
+                        }
+                    }
+                }
+                
+                const payload = {
+                    inputs: {
+                        'student-name': document.getElementById('student-name').value || '',
+                        'school-name': document.getElementById('school-name').value || ''
+                    },
+                    gridVals: gridVals,
+                    isSolved: isSolved,
+                    stampData: window.stampData || null
+                };
+                
+                try {
+                    localStorage.setItem('bhCrosswordState', JSON.stringify(payload));
+                } catch(e) {
+                    console.error("Local storage save failed:", e);
+                }
+            }, 500);
+        }
+
+        function restoreGameState() {
+            try {
+                const savedState = localStorage.getItem('bhCrosswordState');
+                if (!savedState) return;
+
+                const data = JSON.parse(savedState);
+                isRestoring = true;
+                
+                if (data.inputs) {
+                    const sName = document.getElementById('student-name');
+                    if (sName && data.inputs['student-name']) sName.value = data.inputs['student-name'];
+                    
+                    const schName = document.getElementById('school-name');
+                    if (schName && data.inputs['school-name']) schName.value = data.inputs['school-name'];
+                }
+
+                if (data.gridVals) {
+                    data.gridVals.forEach(cell => {
+                        if (grid[cell.r] && grid[cell.r][cell.c] && !grid[cell.r][cell.c].isBlack) {
+                            grid[cell.r][cell.c].value = cell.val;
+                        }
+                    });
+                }
+
+                if (data.isSolved) {
+                    isSolved = true;
+                    window.stampData = data.stampData || {
+                        studentName: document.getElementById('student-name').value || 'Anonymous',
+                        dateStr: new Date().toLocaleDateString(),
+                        timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    triggerWinUI();
+                }
+
+                isRestoring = false;
+            } catch (e) {
+                console.error("Local storage restore failed:", e);
+                isRestoring = false;
+            }
+        }
+
+        function resetGame() {
+            isSolved = false;
+            window.stampData = null;
+            selectedCell = null;
+            
+            try {
+                localStorage.removeItem('bhCrosswordState');
+            } catch(e) {
+                console.error("Could not clear local storage:", e);
+            }
+
+            document.getElementById('student-name').value = '';
+            document.getElementById('school-name').value = '';
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (!grid[r][c].isBlack) {
+                        grid[r][c].value = '';
+                    }
+                }
+            }
+
+            stampInstruction.textContent = "Complete the puzzle to earn your stamp.";
+            stampBox.className = "min-h-[8rem] flex items-center justify-center font-bold tracking-widest transition-all duration-300 border border-dashed border-gray-400 bg-gray-50";
+            stampBox.innerHTML = `<span id="stamp-content" class="text-gray-400 text-2xl">STAMP</span>`;
+            
+            updateUI();
+        }
+
         // --- GAME LOGIC ---
         function getWordAt(r, c, dir) {
             const cell = grid[r][c];
@@ -399,16 +514,38 @@
             }
 
             if (complete && correct && !isSolved) {
-                isSolved = true;
-                handleWin();
+                triggerWin();
             }
         }
 
-        function handleWin() {
+        function triggerWin() {
+            if (isSolved) return;
+            isSolved = true;
+            
             const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
             const now = new Date();
-            const dateStr = now.toLocaleDateString();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            window.stampData = {
+                studentName: studentName,
+                dateStr: now.toLocaleDateString(),
+                timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            triggerWinUI();
+            triggerSave();
+
+            // Setup Modal text
+            const secretWord = symbols.map(sym => grid[sym.row][sym.col].value).join('');
+            modalSecretWord.textContent = secretWord;
+            
+            // Show Modal after a tiny delay
+            setTimeout(() => {
+                winModal.classList.remove('hidden');
+            }, 600);
+        }
+
+        function triggerWinUI() {
+            const sData = window.stampData || { studentName: 'Anonymous', dateStr: '', timeStr: '' };
 
             // Update Stamp
             stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
@@ -418,18 +555,15 @@
                     <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETED</div>
                     <div class="text-xs md:text-sm font-bold border-t-2 border-red-600 pt-1 mt-1 text-black">
                         <span class="uppercase text-red-700">Crossword</span><br>
-                        <span>${studentName}</span><br>
-                        <span class="text-gray-600 font-medium">${dateStr} ${timeStr}</span>
+                        <span>${sData.studentName}</span><br>
+                        <span class="text-gray-600 font-medium">${sData.dateStr} ${sData.timeStr}</span>
                     </div>
                 </div>
             `;
-
-            // Setup Modal text
+            
+            // Just in case they restored from a refresh, ensure modal secret word is set
             const secretWord = symbols.map(sym => grid[sym.row][sym.col].value).join('');
             modalSecretWord.textContent = secretWord;
-            
-            // Show Modal
-            winModal.classList.remove('hidden');
         }
 
         function setSelectedCell(r, c) {
@@ -481,6 +615,7 @@
             grid[selectedCell.r][selectedCell.c].value = char;
             advanceCursor();
             updateUI();
+            triggerSave();
         }
 
         function handleBackspace() {
@@ -496,6 +631,7 @@
                 }
             }
             updateUI();
+            triggerSave();
         }
 
         // Listen for PC Keyboards
@@ -552,6 +688,7 @@
         renderGridDOM();
         renderCluesDOM();
         renderSecretWordDOM();
+        restoreGameState();
         updateUI();
 
     </script>
