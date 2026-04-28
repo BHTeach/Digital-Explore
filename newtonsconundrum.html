@@ -66,11 +66,11 @@
         <div class="bg-white border-2 border-stone-800 p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(44,30,22,1)] max-w-2xl mx-auto">
             <div class="flex-1 flex items-center gap-2">
                 <label for="student-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">Name:</label>
-                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]">
+                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
             </div>
             <div class="flex-1 flex items-center gap-2">
                 <label for="school-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">School:</label>
-                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]">
+                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
             </div>
         </div>
 
@@ -140,6 +140,8 @@
         const TOTAL_STEPS = 11; // 7 Houses + 4 Riddles
         let completedSteps = 0;
         let isSolved = false;
+        let isRestoring = false;
+        window.stampData = null;
 
         // --- DOM INITIALIZATION ---
         function initDOM() {
@@ -161,7 +163,7 @@
                         <div class="relative">
                             <input type="text" id="house-${h.id}" placeholder="Enter era..." autocomplete="off" value="${value}" ${disabledStr}
                                 class="w-full ${bgClass} border-b-2 ${borderClass} outline-none px-2 py-2 text-base md:text-lg font-bold ${textClass} transition-colors focus:border-[#8b0000] rounded-t-sm" 
-                                oninput="handleHouseInput('${h.id}', this.value)" />
+                                oninput="handleHouseInput('${h.id}', this.value); triggerSave();" />
                             ${isPrefilled ? `<i class="fa-solid fa-check text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2"></i>` : `<i class="fa-solid fa-check text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 transition-opacity duration-300" id="icon-house-${h.id}"></i>`}
                         </div>
                     </div>
@@ -188,7 +190,7 @@
                         <div class="relative mt-auto">
                             <input type="text" id="riddle-${r.id}" placeholder="Type your answer..." autocomplete="off"
                                 class="w-full bg-stone-50 border-2 border-stone-300 outline-none px-3 py-2 text-md font-bold text-stone-800 transition-colors focus:border-[#8b0000] rounded-sm" 
-                                oninput="handleRiddleInput('${r.id}', this.value)" />
+                                oninput="handleRiddleInput('${r.id}', this.value); triggerSave();" />
                             <i class="fa-solid fa-check text-green-500 absolute right-3 top-1/2 transform -translate-y-1/2 opacity-0 transition-opacity duration-300" id="icon-riddle-${r.id}"></i>
                         </div>
                     </div>
@@ -197,6 +199,116 @@
             });
 
             updateProgress();
+        }
+
+        // --- LOCAL STORAGE SAVE & RESTORE ---
+        
+        let saveTimeout;
+        function triggerSave() {
+            if (isRestoring) return;
+            
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const state = {
+                    studentName: document.getElementById('student-name').value || '',
+                    schoolName: document.getElementById('school-name').value || '',
+                    inputs: {},
+                    isSolved: isSolved,
+                    stampData: window.stampData || null
+                };
+
+                houses.forEach(h => {
+                    if (!h.prefilled) {
+                        const el = document.getElementById(`house-${h.id}`);
+                        if (el) state.inputs[`house-${h.id}`] = el.value;
+                    }
+                });
+
+                riddles.forEach(r => {
+                    const el = document.getElementById(`riddle-${r.id}`);
+                    if (el) state.inputs[`riddle-${r.id}`] = el.value;
+                });
+
+                try {
+                    localStorage.setItem('bhNewtonsState', JSON.stringify(state));
+                } catch(e) {
+                    console.error("Local storage save failed:", e);
+                }
+            }, 500);
+        }
+
+        function restoreGameState() {
+            try {
+                const savedState = localStorage.getItem('bhNewtonsState');
+                if (!savedState) return;
+
+                const data = JSON.parse(savedState);
+                isRestoring = true;
+
+                if (data.studentName) document.getElementById('student-name').value = data.studentName;
+                if (data.schoolName) document.getElementById('school-name').value = data.schoolName;
+
+                if (data.inputs) {
+                    houses.forEach(h => {
+                        if (!h.prefilled && data.inputs[`house-${h.id}`] !== undefined) {
+                            const el = document.getElementById(`house-${h.id}`);
+                            if (el) {
+                                el.value = data.inputs[`house-${h.id}`];
+                                
+                                // Re-evaluate if it was solved based on restored input
+                                const cleanVal = el.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+                                if (cleanVal.length >= 2 && h.check(cleanVal)) {
+                                    h.solved = true;
+                                    el.value = h.display;
+                                    el.disabled = true;
+                                    el.classList.remove('bg-white', 'border-stone-300', 'text-stone-800');
+                                    el.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                                    document.getElementById(`icon-house-${h.id}`).classList.remove('opacity-0');
+                                    completedSteps++;
+                                }
+                            }
+                        }
+                    });
+
+                    riddles.forEach(r => {
+                        if (data.inputs[`riddle-${r.id}`] !== undefined) {
+                            const el = document.getElementById(`riddle-${r.id}`);
+                            if (el) {
+                                el.value = data.inputs[`riddle-${r.id}`];
+                                
+                                // Re-evaluate
+                                const cleanVal = el.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+                                if (cleanVal.length >= 2 && r.check(cleanVal)) {
+                                    r.solved = true;
+                                    el.value = r.display;
+                                    el.disabled = true;
+                                    el.classList.remove('bg-stone-50', 'border-stone-300', 'text-stone-800');
+                                    el.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                                    document.getElementById(`icon-riddle-${r.id}`).classList.remove('opacity-0');
+                                    completedSteps++;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                updateProgress();
+
+                if (data.isSolved) {
+                    isSolved = true;
+                    window.stampData = data.stampData || {
+                        studentName: document.getElementById('student-name').value || 'Anonymous',
+                        dateStr: new Date().toLocaleDateString(),
+                        timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    triggerWinUI();
+                }
+
+                isRestoring = false;
+            } catch(e) {
+                console.error("Local storage restore failed", e);
+                isRestoring = false;
+            }
         }
 
         // --- GAME LOGIC ---
@@ -254,35 +366,44 @@
             if (completedSteps >= TOTAL_STEPS && !isSolved) {
                 isSolved = true;
                 
-                const stampInstruction = document.getElementById('stamp-instruction');
-                const stampBox = document.getElementById('stamp-box');
-                const winModal = document.getElementById('win-modal');
-
                 const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
                 const now = new Date();
-                const dateStr = now.toLocaleDateString();
-                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                // Trigger Stamp Animation
-                stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
-                stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
                 
-                stampBox.innerHTML = `
-                    <div class="text-red-600 border-4 border-red-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/95 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
-                        <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETE</div>
-                        <div class="text-xs md:text-sm font-bold border-t-2 border-red-600 pt-1 mt-1 text-stone-800">
-                            <span class="uppercase text-[#8b0000]">Newton's Conundrum</span><br>
-                            <span>${studentName}</span><br>
-                            <span class="text-stone-500 font-medium">${dateStr} ${timeStr}</span>
-                        </div>
-                    </div>
-                `;
+                window.stampData = {
+                    studentName: studentName,
+                    dateStr: now.toLocaleDateString(),
+                    timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+
+                triggerWinUI();
+                triggerSave();
                 
                 // Show Modal after delay
                 setTimeout(() => {
-                    winModal.classList.remove('hidden');
+                    document.getElementById('win-modal').classList.remove('hidden');
                 }, 600);
             }
+        }
+
+        function triggerWinUI() {
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            const sData = window.stampData || { studentName: 'Anonymous', dateStr: '', timeStr: '' };
+
+            // Trigger Stamp Animation
+            stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
+            stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
+            
+            stampBox.innerHTML = `
+                <div class="text-red-600 border-4 border-red-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/95 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
+                    <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETE</div>
+                    <div class="text-xs md:text-sm font-bold border-t-2 border-red-600 pt-1 mt-1 text-stone-800">
+                        <span class="uppercase text-[#8b0000]">Newton's Conundrum</span><br>
+                        <span>${sData.studentName}</span><br>
+                        <span class="text-stone-500 font-medium">${sData.dateStr} ${sData.timeStr}</span>
+                    </div>
+                </div>
+            `;
         }
 
         function resetGame() {
@@ -290,6 +411,13 @@
             riddles.forEach(r => r.solved = false);
             completedSteps = 0;
             isSolved = false;
+            window.stampData = null;
+
+            try {
+                localStorage.removeItem('bhNewtonsState');
+            } catch(e) {
+                console.error("Could not clear local storage:", e);
+            }
             
             // Clear Name Fields
             document.getElementById('student-name').value = '';
@@ -303,6 +431,7 @@
             stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
             
             initDOM();
+            updateProgress();
         }
 
         // Close Modal Event
@@ -312,6 +441,7 @@
 
         // --- STARTUP ---
         initDOM();
+        restoreGameState();
 
     </script>
 </body>
