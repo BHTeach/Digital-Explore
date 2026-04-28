@@ -69,11 +69,11 @@
         <div class="bg-white border-2 border-stone-800 p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(44,30,22,1)] max-w-2xl mx-auto">
             <div class="flex-1 flex items-center gap-2">
                 <label for="student-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">Name:</label>
-                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]">
+                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
             </div>
             <div class="flex-1 flex items-center gap-2">
                 <label for="school-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">School:</label>
-                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]">
+                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
             </div>
         </div>
 
@@ -97,13 +97,13 @@
                     <div class="relative w-full">
                         <input type="text" id="deduce-thief-1" placeholder="First person..." autocomplete="off"
                             class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 transition-colors focus:border-[#8b0000]" 
-                            oninput="updateProgress()" />
+                            oninput="updateProgress(); triggerSave();" />
                     </div>
                     <span class="font-bold text-stone-400">and</span>
                     <div class="relative w-full">
                         <input type="text" id="deduce-thief-2" placeholder="Second person..." autocomplete="off"
                             class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 transition-colors focus:border-[#8b0000]" 
-                            oninput="updateProgress()" />
+                            oninput="updateProgress(); triggerSave();" />
                     </div>
                 </div>
             </div>
@@ -114,7 +114,7 @@
                 <div class="relative w-full">
                     <input type="text" id="deduce-location-1" placeholder="Type your answer..." autocomplete="off"
                         class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 transition-colors focus:border-[#8b0000]" 
-                        oninput="updateProgress()" />
+                        oninput="updateProgress(); triggerSave();" />
                 </div>
             </div>
 
@@ -124,7 +124,7 @@
                 <div class="relative w-full">
                     <input type="text" id="deduce-location-2" placeholder="Type your answer..." autocomplete="off"
                         class="w-full bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 transition-colors focus:border-[#8b0000]" 
-                        oninput="updateProgress()" />
+                        oninput="updateProgress(); triggerSave();" />
                 </div>
             </div>
 
@@ -205,6 +205,8 @@
 
         const TOTAL_STEPS = 8;
         let isSolved = false;
+        window.stampData = null;
+        let isRestoring = false;
 
         // --- DOM INITIALIZATION ---
         function initDOM() {
@@ -236,7 +238,6 @@
                 html += `       </div>
                             </div>`;
 
-                // Add Image if exists
                 if (q.image) {
                     html += `
                         <div class="shrink-0 mx-auto md:mx-0 w-32 h-32 md:w-40 md:h-40 border-4 border-stone-800 bg-stone-200 shadow-inner overflow-hidden -order-1 md:order-last">
@@ -245,7 +246,6 @@
                     `;
                 }
 
-                // Add Clue Note if exists
                 if (q.clue) {
                     html += `
                         <div class="shrink-0 mx-auto md:mx-0 w-full md:w-56 bg-amber-100 border border-amber-300 shadow-md p-4 rotate-1 -order-1 md:order-last">
@@ -258,8 +258,6 @@
                 html += `</div>`;
                 container.innerHTML += html;
             });
-
-            updateProgress();
         }
 
         // --- GAME LOGIC ---
@@ -269,7 +267,6 @@
 
             selections[qId] = idx;
             
-            // Update UI to show the button as visually "pressed" / selected
             const container = document.getElementById(`opts-${qId}`);
             Array.from(container.children).forEach((child, i) => {
                 if (i === idx) {
@@ -282,6 +279,7 @@
             });
 
             updateProgress();
+            triggerSave();
         }
 
         function updateProgress() {
@@ -298,17 +296,102 @@
 
             document.getElementById('progress-text').innerText = `${filledCount} / ${TOTAL_STEPS}`;
         }
+        
+        // --- LOCAL STORAGE SAVE & RESTORE ---
+        
+        let saveTimeout;
+        function triggerSave() {
+            if (isRestoring) return;
+            
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const payload = {
+                    selections: selections,
+                    inputs: {
+                        'student-name': document.getElementById('student-name').value || '',
+                        'school-name': document.getElementById('school-name').value || '',
+                        'deduce-thief-1': document.getElementById('deduce-thief-1').value || '',
+                        'deduce-thief-2': document.getElementById('deduce-thief-2').value || '',
+                        'deduce-location-1': document.getElementById('deduce-location-1').value || '',
+                        'deduce-location-2': document.getElementById('deduce-location-2').value || '',
+                    },
+                    isSolved: isSolved,
+                    stampData: window.stampData || null
+                };
+                
+                try {
+                    localStorage.setItem('sherlockHolmesState', JSON.stringify(payload));
+                } catch(e) {
+                    console.error("Local storage save failed:", e);
+                }
+            }, 500);
+        }
+
+        function restoreGameState() {
+            try {
+                const savedState = localStorage.getItem('sherlockHolmesState');
+                if (!savedState) return;
+
+                const data = JSON.parse(savedState);
+                isRestoring = true;
+                
+                if (data.selections) {
+                    selections = data.selections;
+                    questions.forEach(q => {
+                        const idx = selections[q.id];
+                        const container = document.getElementById(`opts-${q.id}`);
+                        if (container && idx !== null && idx !== undefined) {
+                            Array.from(container.children).forEach((child, i) => {
+                                if (i === idx) {
+                                    child.classList.add('bg-stone-300', 'border-stone-800', 'shadow-inner');
+                                    child.classList.remove('bg-stone-50', 'border-stone-300');
+                                } else {
+                                    child.classList.remove('bg-stone-300', 'border-stone-800', 'shadow-inner');
+                                    child.classList.add('bg-stone-50', 'border-stone-300');
+                                }
+                            });
+                        }
+                    });
+                }
+
+                if (data.inputs) {
+                    for (const [id, val] of Object.entries(data.inputs)) {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.value = val || '';
+                        }
+                    }
+                }
+
+                updateProgress();
+
+                if (data.isSolved) {
+                    isSolved = true;
+                    window.stampData = data.stampData || {
+                        studentName: document.getElementById('student-name').value || 'Anonymous',
+                        dateStr: new Date().toLocaleDateString(),
+                        timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    triggerWinUI();
+                }
+
+                isRestoring = false;
+            } catch (e) {
+                console.error("Local storage restore failed:", e);
+                isRestoring = false;
+            }
+        }
+
+        // --- SUBMISSION & VALIDATION ---
 
         function evaluateCase() {
             if (isSolved) return;
 
-            // 1. Check Multiple Choice Questions
             if (selections.q1 !== questions[0].correct) return triggerFail();
             if (selections.q2 !== questions[1].correct) return triggerFail();
             if (selections.q3 !== questions[2].correct) return triggerFail();
             if (selections.q4 !== questions[3].correct) return triggerFail();
 
-            // 2. Check Thieves Deductions
             const t1 = document.getElementById('deduce-thief-1').value.toLowerCase().replace(/[^a-z]/g, '');
             const t2 = document.getElementById('deduce-thief-2').value.toLowerCase().replace(/[^a-z]/g, '');
             
@@ -317,61 +400,72 @@
             
             if (!hasDom || !hasTom) return triggerFail();
 
-            // 3. Check Location Deductions
             const l1 = document.getElementById('deduce-location-1').value.toLowerCase().replace(/[^a-z]/g, '');
             const l2 = document.getElementById('deduce-location-2').value.toLowerCase().replace(/[^a-z]/g, '');
 
             if (!(l1.includes('falstaff') || l1.includes('pub'))) return triggerFail();
             if (!(l2.includes('shakespeare') || l2.includes('statue') || l2.includes('courtyard'))) return triggerFail();
 
-            // If code reaches this point, ALL ANSWERS ARE CORRECT!
             triggerWin();
         }
 
         function triggerFail() {
             const err = document.getElementById('error-message');
             err.classList.remove('opacity-0');
-            
-            // Hide the error message again after a short delay
-            setTimeout(() => {
-                err.classList.add('opacity-0');
-            }, 3500);
+            setTimeout(() => { err.classList.add('opacity-0'); }, 3500);
         }
 
         function triggerWin() {
+            if (isSolved) return;
             isSolved = true;
-
-            // Lock all text inputs and turn them green
-            ['deduce-thief-1', 'deduce-thief-2', 'deduce-location-1', 'deduce-location-2'].forEach(id => {
-                const el = document.getElementById(id);
-                el.disabled = true;
-                el.classList.remove('bg-stone-50', 'border-stone-300', 'text-stone-800');
-                el.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
-                
-                // Append checkmark
-                if (!el.nextElementSibling || el.nextElementSibling.tagName !== 'I') {
-                    el.parentElement.insertAdjacentHTML('beforeend', '<i class="fa-solid fa-check text-green-500 absolute right-3 top-1/2 transform -translate-y-1/2"></i>');
-                }
-            });
-
-            // Turn all correct MCQs green
-            questions.forEach(q => {
-                const container = document.getElementById(`opts-${q.id}`);
-                const correctBtn = container.children[q.correct];
-                correctBtn.classList.remove('bg-stone-300', 'border-stone-800');
-                correctBtn.classList.add('bg-green-100', 'border-green-600', 'text-green-800', 'shadow-sm');
-                correctBtn.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${correctBtn.innerHTML}`;
-            });
-
-            // Trigger Stamp Animation
-            const stampInstruction = document.getElementById('stamp-instruction');
-            const stampBox = document.getElementById('stamp-box');
-            const winModal = document.getElementById('win-modal');
 
             const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
             const now = new Date();
-            const dateStr = now.toLocaleDateString();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            window.stampData = {
+                studentName: studentName,
+                dateStr: now.toLocaleDateString(),
+                timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            triggerWinUI();
+            triggerSave();
+
+            setTimeout(() => {
+                document.getElementById('win-modal').classList.remove('hidden');
+            }, 600);
+        }
+
+        function triggerWinUI() {
+            ['deduce-thief-1', 'deduce-thief-2', 'deduce-location-1', 'deduce-location-2'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.disabled = true;
+                    el.classList.remove('bg-stone-50', 'border-stone-300', 'text-stone-800');
+                    el.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                    if (!el.nextElementSibling || el.nextElementSibling.tagName !== 'I') {
+                        el.parentElement.insertAdjacentHTML('beforeend', '<i class="fa-solid fa-check text-green-500 absolute right-3 top-1/2 transform -translate-y-1/2"></i>');
+                    }
+                }
+            });
+
+            questions.forEach(q => {
+                const container = document.getElementById(`opts-${q.id}`);
+                if (container && selections[q.id] === q.correct) {
+                    const correctBtn = container.children[q.correct];
+                    if (correctBtn) {
+                        correctBtn.classList.remove('bg-stone-300', 'border-stone-800', 'shadow-inner');
+                        correctBtn.classList.add('bg-green-100', 'border-green-600', 'text-green-800', 'shadow-sm');
+                        if (!correctBtn.innerHTML.includes('fa-check')) {
+                            correctBtn.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${correctBtn.innerHTML}`;
+                        }
+                    }
+                }
+            });
+
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            const sData = window.stampData || { studentName: 'Anonymous', dateStr: '', timeStr: '' };
 
             stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
             stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
@@ -381,27 +475,29 @@
                     <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETE</div>
                     <div class="text-xs md:text-sm font-bold border-t-2 border-red-600 pt-1 mt-1 text-stone-800">
                         <span class="uppercase text-[#8b0000]">Sherlock Holmes</span><br>
-                        <span>${studentName}</span><br>
-                        <span class="text-stone-500 font-medium">${dateStr} ${timeStr}</span>
+                        <span>${sData.studentName}</span><br>
+                        <span class="text-stone-500 font-medium">${sData.dateStr} ${sData.timeStr}</span>
                     </div>
                 </div>
             `;
-            
-            // Show Modal after a tiny delay
-            setTimeout(() => {
-                winModal.classList.remove('hidden');
-            }, 600);
         }
 
         function resetGame() {
             selections = { q1: null, q2: null, q3: null, q4: null };
             isSolved = false;
+            window.stampData = null;
             
-            // Clear Name Fields
-            document.getElementById('student-name').value = '';
-            document.getElementById('school-name').value = '';
+            // Clear local storage
+            try {
+                localStorage.removeItem('sherlockHolmesState');
+            } catch(e) {
+                console.error("Could not clear local storage:", e);
+            }
 
-            // Reset text inputs
+            resetUI();
+        }
+
+        function resetUI() {
             ['deduce-thief-1', 'deduce-thief-2', 'deduce-location-1', 'deduce-location-2'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) {
@@ -409,12 +505,16 @@
                     el.disabled = false;
                     el.classList.add('bg-stone-50', 'border-stone-300', 'text-stone-800');
                     el.classList.remove('bg-green-50', 'border-green-500', 'text-green-800');
-                    // Remove checkmark
                     if (el.nextElementSibling && el.nextElementSibling.tagName === 'I') {
                         el.nextElementSibling.remove();
                     }
                 }
             });
+
+            const sName = document.getElementById('student-name');
+            if (sName) sName.value = '';
+            const schName = document.getElementById('school-name');
+            if (schName) schName.value = '';
 
             const stampInstruction = document.getElementById('stamp-instruction');
             const stampBox = document.getElementById('stamp-box');
@@ -426,6 +526,7 @@
             document.getElementById('error-message').classList.add('opacity-0');
             
             initDOM();
+            updateProgress();
         }
 
         // Close Modal Event
@@ -435,6 +536,8 @@
 
         // --- STARTUP ---
         initDOM();
+        restoreGameState();
+        updateProgress();
 
     </script>
 </body>
