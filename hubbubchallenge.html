@@ -62,11 +62,11 @@
         <div class="bg-white border-2 border-stone-800 p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(44,30,22,1)] max-w-2xl mx-auto">
             <div class="flex-1 flex items-center gap-2">
                 <label for="student-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">Name:</label>
-                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]">
+                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
             </div>
             <div class="flex-1 flex items-center gap-2">
                 <label for="school-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">School:</label>
-                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]">
+                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-2 py-1 font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
             </div>
         </div>
 
@@ -76,15 +76,15 @@
             
             <div class="flex flex-col md:flex-row items-center gap-4 text-xl font-medium">
                 <span>Meet the teacher,</span>
-                <input type="text" id="teacher-name" placeholder="name" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-[#8b0000] text-center w-full md:w-48 focus:border-[#8b0000]">
+                <input type="text" id="teacher-name" placeholder="name" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-[#8b0000] text-center w-full md:w-48 focus:border-[#8b0000]" oninput="triggerSave()">
                 <span>!</span>
             </div>
             
             <div class="flex flex-col md:flex-row items-center gap-4 text-xl font-medium">
                 <span class="whitespace-nowrap">Where are they from?</span>
-                <input type="text" id="teacher-city" placeholder="city" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-stone-800 text-center w-full md:w-48 focus:border-[#8b0000]">
+                <input type="text" id="teacher-city" placeholder="city" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-stone-800 text-center w-full md:w-48 focus:border-[#8b0000]" oninput="triggerSave()">
                 <span class="hidden md:inline">,</span>
-                <input type="text" id="teacher-country" placeholder="country" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-stone-800 text-center w-full md:w-48 focus:border-[#8b0000]">
+                <input type="text" id="teacher-country" placeholder="country" class="bh-input bg-stone-50 border-b-2 border-stone-400 outline-none px-3 py-1 font-bold text-stone-800 text-center w-full md:w-48 focus:border-[#8b0000]" oninput="triggerSave()">
             </div>
 
         </div>
@@ -93,11 +93,11 @@
         <h3 class="text-2xl font-bold uppercase tracking-widest mb-4 text-stone-800 border-b-2 border-stone-200 pb-2">2. Fill in the Blanks</h3>
         <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 mb-10">
             <div class="space-y-4 max-w-2xl">
-                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">1.</span><input type="text" id="blank-1" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
-                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">2.</span><input type="text" id="blank-2" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
-                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">3.</span><input type="text" id="blank-3" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
-                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">4.</span><input type="text" id="blank-4" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
-                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">5.</span><input type="text" id="blank-5" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">1.</span><input type="text" id="blank-1" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">2.</span><input type="text" id="blank-2" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">3.</span><input type="text" id="blank-3" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">4.</span><input type="text" id="blank-4" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()"></div>
+                <div class="flex items-center gap-4"><span class="font-bold text-xl w-6 text-stone-400">5.</span><input type="text" id="blank-5" class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-bold text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()"></div>
             </div>
         </div>
 
@@ -108,24 +108,24 @@
             
             <div class="space-y-4 max-w-2xl">
                 <div class="flex items-center gap-4">
-                    <input type="checkbox" id="todo-check-1" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
-                    <input type="text" id="todo-text-1" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                    <input type="checkbox" id="todo-check-1" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400" onchange="triggerSave()">
+                    <input type="text" id="todo-text-1" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
                 </div>
                 <div class="flex items-center gap-4">
-                    <input type="checkbox" id="todo-check-2" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
-                    <input type="text" id="todo-text-2" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                    <input type="checkbox" id="todo-check-2" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400" onchange="triggerSave()">
+                    <input type="text" id="todo-text-2" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
                 </div>
                 <div class="flex items-center gap-4">
-                    <input type="checkbox" id="todo-check-3" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
-                    <input type="text" id="todo-text-3" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                    <input type="checkbox" id="todo-check-3" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400" onchange="triggerSave()">
+                    <input type="text" id="todo-text-3" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
                 </div>
                 <div class="flex items-center gap-4">
-                    <input type="checkbox" id="todo-check-4" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
-                    <input type="text" id="todo-text-4" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                    <input type="checkbox" id="todo-check-4" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400" onchange="triggerSave()">
+                    <input type="text" id="todo-text-4" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
                 </div>
                 <div class="flex items-center gap-4">
-                    <input type="checkbox" id="todo-check-5" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400">
-                    <input type="text" id="todo-text-5" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]">
+                    <input type="checkbox" id="todo-check-5" class="bh-input w-6 h-6 md:w-8 md:h-8 accent-[#8b0000] cursor-pointer rounded-sm border-2 border-stone-400" onchange="triggerSave()">
+                    <input type="text" id="todo-text-5" placeholder="Task..." class="bh-input flex-1 bg-stone-50 border-b-2 border-stone-300 outline-none px-3 py-2 text-lg font-medium text-stone-800 focus:border-[#8b0000]" oninput="triggerSave()">
                 </div>
             </div>
         </div>
@@ -221,6 +221,126 @@
         const staffModal = document.getElementById('staff-modal');
         const winModal = document.getElementById('win-modal');
 
+        // State Tracking for Local Storage
+        let isApproved = false;
+        let isRestoring = false;
+        window.stampData = null;
+        let saveTimeout;
+
+        function triggerSave() {
+            if (isRestoring) return;
+            
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const state = {
+                    studentName: document.getElementById('student-name').value || '',
+                    schoolName: document.getElementById('school-name').value || '',
+                    teacherName: document.getElementById('teacher-name').value || '',
+                    teacherCity: document.getElementById('teacher-city').value || '',
+                    teacherCountry: document.getElementById('teacher-country').value || '',
+                    blanks: {},
+                    todos: {},
+                    isApproved: isApproved,
+                    stampData: window.stampData || null
+                };
+
+                for(let i = 1; i <= 5; i++) {
+                    state.blanks[`blank-${i}`] = document.getElementById(`blank-${i}`).value || '';
+                    state.todos[`todo-text-${i}`] = document.getElementById(`todo-text-${i}`).value || '';
+                    state.todos[`todo-check-${i}`] = document.getElementById(`todo-check-${i}`).checked;
+                }
+
+                try {
+                    localStorage.setItem('bhHubbubState', JSON.stringify(state));
+                } catch(e) {
+                    console.error("Local storage save failed:", e);
+                }
+            }, 500);
+        }
+
+        function restoreGameState() {
+            try {
+                const savedState = localStorage.getItem('bhHubbubState');
+                if (!savedState) return;
+
+                const data = JSON.parse(savedState);
+                isRestoring = true;
+
+                if (data.studentName) document.getElementById('student-name').value = data.studentName;
+                if (data.schoolName) document.getElementById('school-name').value = data.schoolName;
+                if (data.teacherName) document.getElementById('teacher-name').value = data.teacherName;
+                if (data.teacherCity) document.getElementById('teacher-city').value = data.teacherCity;
+                if (data.teacherCountry) document.getElementById('teacher-country').value = data.teacherCountry;
+
+                if (data.blanks) {
+                    for(let i = 1; i <= 5; i++) {
+                        if (data.blanks[`blank-${i}`] !== undefined) {
+                            document.getElementById(`blank-${i}`).value = data.blanks[`blank-${i}`];
+                        }
+                    }
+                }
+
+                if (data.todos) {
+                    for(let i = 1; i <= 5; i++) {
+                        if (data.todos[`todo-text-${i}`] !== undefined) {
+                            document.getElementById(`todo-text-${i}`).value = data.todos[`todo-text-${i}`];
+                        }
+                        if (data.todos[`todo-check-${i}`] !== undefined) {
+                            document.getElementById(`todo-check-${i}`).checked = data.todos[`todo-check-${i}`];
+                        }
+                    }
+                }
+
+                if (data.isApproved) {
+                    isApproved = true;
+                    window.stampData = data.stampData || {
+                        studentName: document.getElementById('student-name').value || 'Anonymous',
+                        dateStr: new Date().toLocaleDateString(),
+                        timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    restoreApprovedUI();
+                }
+
+                isRestoring = false;
+            } catch(e) {
+                console.error("Local storage restore failed", e);
+                isRestoring = false;
+            }
+        }
+
+        function restoreApprovedUI() {
+            // Lock all inputs
+            document.querySelectorAll('.bh-input').forEach(el => {
+                el.disabled = true;
+                if (el.type === 'text') {
+                    el.classList.remove('bg-stone-50', 'border-stone-300', 'border-stone-400', 'text-stone-800');
+                    el.classList.add('bg-green-50', 'border-green-400', 'text-green-800');
+                }
+            });
+
+            // Hide the staff action button
+            document.getElementById('action-area').style.display = 'none';
+
+            // Trigger Stamp
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            const sData = window.stampData || { studentName: 'Anonymous', dateStr: '', timeStr: '' };
+            
+            stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
+            stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-green-50 border-4 border-green-300 overflow-hidden relative";
+            
+            stampBox.innerHTML = `
+                <div class="text-green-600 border-4 border-green-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/95 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
+                    <div class="text-xl md:text-2xl font-black mb-1 leading-none">APPROVED</div>
+                    <div class="text-xs md:text-sm font-bold border-t-2 border-green-600 pt-1 mt-1 text-stone-800">
+                        <span class="uppercase text-green-700">Hubbub Challenge</span><br>
+                        <span>${sData.studentName}</span><br>
+                        <span class="text-stone-500 font-medium">${sData.dateStr} ${sData.timeStr}</span>
+                    </div>
+                </div>
+            `;
+        }
+
         function openStaffModal() {
             // Populate Teacher details
             const tName = document.getElementById('teacher-name').value.trim() || '<i>(blank)</i>';
@@ -268,40 +388,18 @@
         }
 
         function approveWork() {
-            // Lock all inputs
-            document.querySelectorAll('.bh-input').forEach(el => {
-                el.disabled = true;
-                if (el.type === 'text') {
-                    el.classList.remove('bg-stone-50', 'border-stone-300', 'border-stone-400', 'text-stone-800');
-                    el.classList.add('bg-green-50', 'border-green-400', 'text-green-800');
-                }
-            });
-
-            // Hide the staff action button
-            document.getElementById('action-area').style.display = 'none';
-
+            isApproved = true;
             const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
             const now = new Date();
-            const dateStr = now.toLocaleDateString();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            window.stampData = {
+                studentName: studentName,
+                dateStr: now.toLocaleDateString(),
+                timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
 
-            // Trigger Stamp
-            const stampInstruction = document.getElementById('stamp-instruction');
-            const stampBox = document.getElementById('stamp-box');
-            
-            stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
-            stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-green-50 border-4 border-green-300 overflow-hidden relative";
-            
-            stampBox.innerHTML = `
-                <div class="text-green-600 border-4 border-green-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/95 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
-                    <div class="text-xl md:text-2xl font-black mb-1 leading-none">APPROVED</div>
-                    <div class="text-xs md:text-sm font-bold border-t-2 border-green-600 pt-1 mt-1 text-stone-800">
-                        <span class="uppercase text-green-700">Hubbub Challenge</span><br>
-                        <span>${studentName}</span><br>
-                        <span class="text-stone-500 font-medium">${dateStr} ${timeStr}</span>
-                    </div>
-                </div>
-            `;
+            restoreApprovedUI();
+            triggerSave();
 
             closeStaffModal();
             
@@ -311,6 +409,15 @@
         }
 
         function resetGame() {
+            isApproved = false;
+            window.stampData = null;
+
+            try {
+                localStorage.removeItem('bhHubbubState');
+            } catch(e) {
+                console.error("Could not clear local storage:", e);
+            }
+
             // Clear inputs and unlock
             document.querySelectorAll('.bh-input').forEach(el => {
                 el.disabled = false;
@@ -349,6 +456,9 @@
         document.getElementById('close-modal-btn').addEventListener('click', () => {
             winModal.classList.add('hidden');
         });
+
+        // Initialize state on load
+        restoreGameState();
 
     </script>
 </body>
