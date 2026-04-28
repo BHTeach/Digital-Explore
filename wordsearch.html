@@ -57,11 +57,11 @@
         <div class="bg-white border-2 border-black p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(0,0,0,1)] max-w-2xl mx-auto">
             <div class="flex-1 flex items-center gap-2">
                 <label for="student-name" class="font-bold uppercase tracking-wider text-gray-700 text-sm">Name:</label>
-                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-gray-50 border-b-2 border-gray-300 outline-none px-2 py-1 font-bold text-black focus:border-black">
+                <input type="text" id="student-name" placeholder="Your name" class="flex-1 bg-gray-50 border-b-2 border-gray-300 outline-none px-2 py-1 font-bold text-black focus:border-black" oninput="triggerSave()">
             </div>
             <div class="flex-1 flex items-center gap-2">
                 <label for="school-name" class="font-bold uppercase tracking-wider text-gray-700 text-sm">School:</label>
-                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-gray-50 border-b-2 border-gray-300 outline-none px-2 py-1 font-bold text-black focus:border-black">
+                <input type="text" id="school-name" placeholder="Your school" class="flex-1 bg-gray-50 border-b-2 border-gray-300 outline-none px-2 py-1 font-bold text-black focus:border-black" oninput="triggerSave()">
             </div>
         </div>
 
@@ -155,6 +155,11 @@
         let startCell = null;
         let currentPath = [];
         let permanentlyHighlighted = new Set(); // Stores "row,col" strings
+        
+        // Local Storage State
+        let isRestoring = false;
+        window.stampData = null;
+        let saveTimeout;
 
         // --- DOM INITIALIZATION ---
         const gridContainer = document.getElementById('grid-container');
@@ -175,6 +180,64 @@
                     
                     gridContainer.appendChild(cell);
                 }
+            }
+        }
+
+        // --- LOCAL STORAGE SAVE & RESTORE ---
+        
+        function triggerSave() {
+            if (isRestoring) return;
+            
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const state = {
+                    studentName: document.getElementById('student-name').value || '',
+                    schoolName: document.getElementById('school-name').value || '',
+                    foundWords: foundWords,
+                    permanentlyHighlighted: Array.from(permanentlyHighlighted), // Set to Array
+                    isSolved: isSolved,
+                    stampData: window.stampData || null
+                };
+
+                try {
+                    localStorage.setItem('bhWordSearchState', JSON.stringify(state));
+                } catch(e) {
+                    console.error("Local storage save failed:", e);
+                }
+            }, 500);
+        }
+
+        function restoreGameState() {
+            try {
+                const savedState = localStorage.getItem('bhWordSearchState');
+                if (!savedState) return;
+
+                const data = JSON.parse(savedState);
+                isRestoring = true;
+
+                if (data.studentName) document.getElementById('student-name').value = data.studentName;
+                if (data.schoolName) document.getElementById('school-name').value = data.schoolName;
+
+                if (data.foundWords) foundWords = data.foundWords;
+                if (data.permanentlyHighlighted) permanentlyHighlighted = new Set(data.permanentlyHighlighted);
+
+                renderHighlights();
+                updateUI();
+
+                if (data.isSolved) {
+                    isSolved = true;
+                    window.stampData = data.stampData || {
+                        studentName: document.getElementById('student-name').value || 'Anonymous',
+                        dateStr: new Date().toLocaleDateString(),
+                        timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    triggerWinUI();
+                }
+
+                isRestoring = false;
+            } catch(e) {
+                console.error("Local storage restore failed", e);
+                isRestoring = false;
             }
         }
 
@@ -309,6 +372,8 @@
 
                 renderHighlights();
                 updateUI();
+                triggerSave(); // Save progress after a word is found!
+
             } else {
                 setStatus(`"${word}" is not a valid word.`, 'text-red-500');
                 flashRed(pathCopy);
@@ -369,37 +434,51 @@
 
             // Check Win
             if (foundWords.length >= TARGET_WORD_COUNT && !isSolved) {
-                isSolved = true;
-                
-                const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
-                const now = new Date();
-                const dateStr = now.toLocaleDateString();
-                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                const stampInstruction = document.getElementById('stamp-instruction');
-                const stampBox = document.getElementById('stamp-box');
-                const winModal = document.getElementById('win-modal');
-
-                // Trigger Stamp Animation
-                stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
-                stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200";
-                
-                stampBox.innerHTML = `
-                    <div class="text-red-600 border-4 border-red-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/90 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
-                        <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETED</div>
-                        <div class="text-xs md:text-sm font-bold border-t-2 border-red-600 pt-1 mt-1 text-black">
-                            <span class="uppercase text-red-700">Word Search</span><br>
-                            <span>${studentName}</span><br>
-                            <span class="text-gray-600 font-medium">${dateStr} ${timeStr}</span>
-                        </div>
-                    </div>
-                `;
-                
-                // Show Modal after a tiny delay
-                setTimeout(() => {
-                    winModal.classList.remove('hidden');
-                }, 600);
+                triggerWin();
             }
+        }
+
+        function triggerWin() {
+            if (isSolved) return;
+            isSolved = true;
+            
+            const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
+            const now = new Date();
+            
+            window.stampData = {
+                studentName: studentName,
+                dateStr: now.toLocaleDateString(),
+                timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            triggerWinUI();
+            triggerSave();
+
+            // Show Modal after a tiny delay
+            setTimeout(() => {
+                document.getElementById('win-modal').classList.remove('hidden');
+            }, 600);
+        }
+
+        function triggerWinUI() {
+            const stampInstruction = document.getElementById('stamp-instruction');
+            const stampBox = document.getElementById('stamp-box');
+            const sData = window.stampData || { studentName: 'Anonymous', dateStr: '', timeStr: '' };
+
+            // Trigger Stamp Animation
+            stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
+            stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200";
+            
+            stampBox.innerHTML = `
+                <div class="text-red-600 border-4 border-red-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/90 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
+                    <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETED</div>
+                    <div class="text-xs md:text-sm font-bold border-t-2 border-red-600 pt-1 mt-1 text-black">
+                        <span class="uppercase text-red-700">Word Search</span><br>
+                        <span>${sData.studentName}</span><br>
+                        <span class="text-gray-600 font-medium">${sData.dateStr} ${sData.timeStr}</span>
+                    </div>
+                </div>
+            `;
         }
 
         function resetGame() {
@@ -408,6 +487,13 @@
             isSolved = false;
             startCell = null;
             currentPath = [];
+            window.stampData = null;
+
+            try {
+                localStorage.removeItem('bhWordSearchState');
+            } catch(e) {
+                console.error("Could not clear local storage:", e);
+            }
             
             // Clear inputs
             document.getElementById('student-name').value = '';
@@ -432,6 +518,7 @@
 
         // --- STARTUP ---
         initDOM();
+        restoreGameState();
 
     </script>
 </body>
