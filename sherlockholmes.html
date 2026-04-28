@@ -44,11 +44,6 @@
                     <p class="text-xs font-bold uppercase tracking-widest text-stone-500 mb-1">Investigation Progress</p>
                     <div class="text-3xl font-bold text-[#8b0000]"><span id="progress-text">0 / 8</span></div>
                 </div>
-                <div class="space-x-2">
-                    <button onclick="resetGame()" class="text-sm bg-[#8b0000] hover:bg-[#6b0000] text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
-                        Reset Investigation
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -207,6 +202,7 @@
         let isSolved = false;
         window.stampData = null;
         let isRestoring = false;
+        let saveTimeout;
 
         // --- DOM INITIALIZATION ---
         function initDOM() {
@@ -299,7 +295,6 @@
         
         // --- LOCAL STORAGE SAVE & RESTORE ---
         
-        let saveTimeout;
         function triggerSave() {
             if (isRestoring) return;
             
@@ -480,53 +475,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function resetGame() {
-            selections = { q1: null, q2: null, q3: null, q4: null };
-            isSolved = false;
-            window.stampData = null;
-            
-            // Clear local storage
-            try {
-                localStorage.removeItem('sherlockHolmesState');
-            } catch(e) {
-                console.error("Could not clear local storage:", e);
-            }
-
-            resetUI();
-        }
-
-        function resetUI() {
-            ['deduce-thief-1', 'deduce-thief-2', 'deduce-location-1', 'deduce-location-2'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) {
-                    el.value = '';
-                    el.disabled = false;
-                    el.classList.add('bg-stone-50', 'border-stone-300', 'text-stone-800');
-                    el.classList.remove('bg-green-50', 'border-green-500', 'text-green-800');
-                    if (el.nextElementSibling && el.nextElementSibling.tagName === 'I') {
-                        el.nextElementSibling.remove();
-                    }
-                }
-            });
-
-            const sName = document.getElementById('student-name');
-            if (sName) sName.value = '';
-            const schName = document.getElementById('school-name');
-            if (schName) schName.value = '';
-
-            const stampInstruction = document.getElementById('stamp-instruction');
-            const stampBox = document.getElementById('stamp-box');
-            
-            stampInstruction.textContent = "Complete the investigation to earn your stamp.";
-            stampBox.className = "min-h-[8rem] flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
-            stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
-            
-            document.getElementById('error-message').classList.add('opacity-0');
-            
-            initDOM();
-            updateProgress();
         }
 
         // Close Modal Event
