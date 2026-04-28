@@ -49,11 +49,6 @@
                     <p class="text-xs font-bold uppercase tracking-widest text-stone-500 mb-1">Investigation Progress</p>
                     <div class="text-3xl font-bold text-[#8b0000]"><span id="progress-text">0 / 8</span></div>
                 </div>
-                <div class="space-x-2">
-                    <button onclick="resetGame()" class="text-sm bg-[#8b0000] hover:bg-[#6b0000] text-white font-sans font-bold px-4 py-2 rounded transition-colors shadow-sm">
-                        Reset All
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -180,6 +175,7 @@
         let isSolved = false;
         let isRestoring = false;
         window.stampData = null;
+        let saveTimeout;
 
         // --- DOM INITIALIZATION ---
         function generateNameBoxesHTML(loc) {
@@ -191,8 +187,6 @@
             
             words.forEach((word, wordIndex) => {
                 const isWordFound = foundWords.includes(wordIndex);
-                
-                // Wrap each word so letters stay on the same line
                 html += `<div class="flex flex-nowrap gap-1">`;
                 
                 for (let i = 0; i < word.length; i++) {
@@ -218,7 +212,7 @@
                     charGlobalIndex++;
                 }
                 html += `</div>`;
-                charGlobalIndex++; // Space
+                charGlobalIndex++; 
             });
             
             html += `</div>`;
@@ -242,14 +236,11 @@
                         </div>
                     </div>
 
-                    <!-- Place Name Area -->
                     <div id="name-area-${loc.id}" class="space-y-2">
                         <label id="name-label-${loc.id}" class="text-sm font-bold uppercase tracking-wider text-stone-600">Place Name:</label>
-                        
                         <div id="boxes-container-${loc.id}" class="mb-2">
                             ${generateNameBoxesHTML(loc)}
                         </div>
-
                         <div class="relative" id="input-container-${loc.id}">
                             <input type="text" id="name-input-${loc.id}" placeholder="Type place name here..." autocomplete="off"
                                 class="w-full bg-stone-50 border-2 border-stone-300 outline-none px-4 py-3 text-lg font-bold text-stone-800 uppercase transition-colors focus:border-[#8b0000]" 
@@ -257,7 +248,6 @@
                         </div>
                     </div>
 
-                    <!-- Question Area -->
                     <div id="q-area-${loc.id}" class="space-y-3 bg-stone-50 p-4 border border-stone-200 mt-auto">
                         <p class="font-bold text-stone-800 mb-2"><span class="text-[#8b0000]">Q:</span> ${loc.question}</p>
                 `;
@@ -289,7 +279,6 @@
                 gridContainer.appendChild(card);
             });
 
-            // Init Secret Word Boxes
             const secretContainer = document.getElementById('secret-word-container');
             if (secretContainer.children.length === 0) {
                 secretContainer.innerHTML = '';
@@ -297,7 +286,6 @@
                     secretContainer.innerHTML += `
                         <div class="flex flex-col items-center gap-2">
                             <div id="secret-box-${i}" class="w-10 h-10 md:w-14 md:h-14 border-2 border-stone-800 bg-white flex items-center justify-center text-2xl md:text-3xl font-black text-[#8b0000] shadow-[2px_2px_0px_rgba(44,30,22,1)]">
-                                
                             </div>
                             <span class="text-xs font-bold text-stone-500">${i}</span>
                         </div>
@@ -306,41 +294,26 @@
             }
         }
 
-        // --- LOCAL STORAGE SAVE & RESTORE ---
-        
-        let saveTimeout;
+        // --- LOCAL STORAGE ---
         function triggerSave() {
             if (isRestoring) return;
-            
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(() => {
                 const inputs = {
                     'student-name': document.getElementById('student-name').value || '',
                     'school-name': document.getElementById('school-name').value || ''
                 };
-                
                 locations.forEach(loc => {
                     const nameInput = document.getElementById(`name-input-${loc.id}`);
                     if (nameInput && !nameInput.disabled) inputs[`name-input-${loc.id}`] = nameInput.value;
-                    
                     if (loc.qType !== 'mc') {
                         const qInput = document.getElementById(`q-input-${loc.id}`);
                         if (qInput && !qInput.disabled) inputs[`q-input-${loc.id}`] = qInput.value;
                     }
                 });
 
-                const payload = {
-                    gameState: gameState,
-                    inputs: inputs,
-                    isSolved: isSolved,
-                    stampData: window.stampData || null
-                };
-                
-                try {
-                    localStorage.setItem('treasureHuntState', JSON.stringify(payload));
-                } catch(e) {
-                    console.error("Local storage save failed:", e);
-                }
+                const payload = { gameState, inputs, isSolved, stampData: window.stampData };
+                localStorage.setItem('treasureHuntState', JSON.stringify(payload));
             }, 500);
         }
 
@@ -348,42 +321,28 @@
             try {
                 const savedState = localStorage.getItem('treasureHuntState');
                 if (!savedState) return;
-
                 const data = JSON.parse(savedState);
                 isRestoring = true;
+                if (data.gameState) gameState = data.gameState;
                 
-                if (data.gameState) {
-                    gameState = data.gameState;
-                }
-
-                initDOM(); // Rebuild grid with updated state visually applied to boxes
-                applyGameStateToUI(); // Fix specific containers, MCQs, labels
-                restoreSecretBoxes(); // Place letters in bottom secret boxes
+                initDOM(); 
+                applyGameStateToUI();
+                restoreSecretBoxes();
                 
                 if (data.inputs) {
                     for (const [id, val] of Object.entries(data.inputs)) {
                         const el = document.getElementById(id);
-                        if (el && !el.disabled) {
-                            el.value = val || '';
-                        }
+                        if (el && !el.disabled) el.value = val || '';
                     }
                 }
-
                 updateProgress();
-
                 if (data.isSolved) {
                     isSolved = true;
-                    window.stampData = data.stampData || {
-                        studentName: document.getElementById('student-name').value || 'Anonymous',
-                        dateStr: new Date().toLocaleDateString(),
-                        timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    };
+                    window.stampData = data.stampData;
                     triggerWinUI();
                 }
-
                 isRestoring = false;
             } catch (e) {
-                console.error("Local storage restore failed:", e);
                 isRestoring = false;
             }
         }
@@ -391,8 +350,6 @@
         function applyGameStateToUI() {
             locations.forEach(loc => {
                 const state = gameState['loc' + loc.id];
-                
-                // Words
                 const words = loc.name.split(' ');
                 if (state.foundWords.length === words.length) {
                     const inputContainer = document.getElementById(`input-container-${loc.id}`);
@@ -403,8 +360,6 @@
                         label.innerHTML = `<i class="fa-solid fa-circle-check"></i> Place Found`;
                     }
                 }
-                
-                // Questions
                 if (state.q) {
                     if (loc.qType === 'mc') {
                         const container = document.getElementById(`mc-options-${loc.id}`);
@@ -412,11 +367,8 @@
                             Array.from(container.children).forEach((child, i) => {
                                 child.disabled = true;
                                 if (i === loc.correctIdx) {
-                                    child.classList.remove('hover:bg-stone-100', 'border-stone-300', 'text-stone-700');
-                                    child.classList.add('bg-green-100', 'border-green-600', 'text-green-800', 'shadow-sm');
-                                    if (!child.innerHTML.includes('fa-check')) {
-                                        child.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${child.innerHTML}`;
-                                    }
+                                    child.classList.add('bg-green-100', 'border-green-600', 'text-green-800');
+                                    child.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${child.innerHTML}`;
                                 } else {
                                     child.classList.add('opacity-40');
                                 }
@@ -427,7 +379,6 @@
                         if (input) {
                             input.value = loc.correctDisplay;
                             input.disabled = true;
-                            input.classList.remove('bg-white', 'border-stone-300', 'text-stone-800');
                             input.classList.add('bg-green-100', 'border-green-600', 'text-green-800');
                         }
                     }
@@ -437,46 +388,32 @@
 
         function restoreSecretBoxes() {
             locations.forEach(loc => {
+                const state = gameState['loc' + loc.id];
                 const words = loc.name.split(' ');
-                const foundWords = gameState['loc' + loc.id].foundWords;
-                
                 loc.secrets.forEach(secretMatch => {
                     let charGlobalIndex = 0;
-                    let isSecretFound = false;
-                    
                     words.forEach((word, wIdx) => {
                         for(let i=0; i<word.length; i++) {
-                            if (charGlobalIndex === secretMatch.index && foundWords.includes(wIdx)) {
-                                isSecretFound = true;
+                            if (charGlobalIndex === secretMatch.index && state.foundWords.includes(wIdx)) {
+                                const box = document.getElementById(`secret-box-${secretMatch.box}`);
+                                if(box) box.textContent = loc.name[secretMatch.index];
                             }
                             charGlobalIndex++;
                         }
                         charGlobalIndex++; 
                     });
-
-                    if (isSecretFound) {
-                        const bottomBox = document.getElementById(`secret-box-${secretMatch.box}`);
-                        if(bottomBox) {
-                            bottomBox.textContent = loc.name[secretMatch.index];
-                        }
-                    }
                 });
             });
         }
 
         // --- GAME LOGIC ---
-
         function handleNameInput(locId, val) {
             const loc = locations.find(l => l.id === locId);
             const words = loc.name.split(' ');
             const cleanVal = val.toLowerCase().replace(/[^a-z]/g, ''); 
-            
-            triggerSave(); // Always save typed text
-            
+            triggerSave();
             if(cleanVal.length === 0) return;
-
             let changed = false;
-            
             words.forEach((word, index) => {
                 if (!gameState['loc' + locId].foundWords.includes(index)) {
                     if (cleanVal.includes(word.toLowerCase())) {
@@ -485,11 +422,10 @@
                     }
                 }
             });
-
             if (changed) {
                 renderSolvedName(loc);
                 updateProgress();
-                triggerSave(); // Save found words state
+                triggerSave();
             }
         }
 
@@ -498,37 +434,27 @@
             const inputContainer = document.getElementById(`input-container-${loc.id}`);
             const label = document.getElementById(`name-label-${loc.id}`);
             const inputField = document.getElementById(`name-input-${loc.id}`);
-            
             boxesContainer.innerHTML = generateNameBoxesHTML(loc);
-            
             const words = loc.name.split(' ');
             const foundWords = gameState['loc' + loc.id].foundWords;
             const isFullySolved = foundWords.length === words.length;
-
             loc.secrets.forEach(secretMatch => {
                 let charGlobalIndex = 0;
-                let isSecretFound = false;
-                
                 words.forEach((word, wIdx) => {
                     for(let i=0; i<word.length; i++) {
                         if (charGlobalIndex === secretMatch.index && foundWords.includes(wIdx)) {
-                            isSecretFound = true;
+                            const bottomBox = document.getElementById(`secret-box-${secretMatch.box}`);
+                            if(bottomBox && bottomBox.textContent !== loc.name[secretMatch.index]) {
+                                bottomBox.textContent = loc.name[secretMatch.index];
+                                bottomBox.classList.add('letter-anim');
+                                setTimeout(() => bottomBox.classList.remove('letter-anim'), 500);
+                            }
                         }
                         charGlobalIndex++;
                     }
                     charGlobalIndex++;  
                 });
-
-                if (isSecretFound) {
-                    const bottomBox = document.getElementById(`secret-box-${secretMatch.box}`);
-                    if(bottomBox && bottomBox.textContent !== loc.name[secretMatch.index]) {
-                        bottomBox.textContent = loc.name[secretMatch.index];
-                        bottomBox.classList.add('letter-anim');
-                        setTimeout(() => bottomBox.classList.remove('letter-anim'), 500);
-                    }
-                }
             });
-
             if (isFullySolved) {
                 inputContainer.style.display = 'none';
                 label.className = "text-sm font-bold uppercase tracking-wider text-green-700 flex items-center gap-2";
@@ -541,16 +467,13 @@
         function handleMCSelection(locId, idx, btnElement) {
             const loc = locations.find(l => l.id === locId);
             if (gameState['loc' + locId].q) return; 
-
             if (loc.correctIdx === idx) {
-                // Correct
                 gameState['loc' + locId].q = true;
                 const container = document.getElementById(`mc-options-${locId}`);
                 Array.from(container.children).forEach((child, i) => {
                     child.disabled = true;
                     if (i === idx) {
-                        child.classList.remove('hover:bg-stone-100', 'border-stone-300', 'text-stone-700');
-                        child.classList.add('bg-green-100', 'border-green-600', 'text-green-800', 'shadow-sm');
+                        child.classList.add('bg-green-100', 'border-green-600', 'text-green-800');
                         child.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${child.innerHTML}`;
                     } else {
                         child.classList.add('opacity-40');
@@ -559,11 +482,8 @@
                 updateProgress();
                 triggerSave();
             } else {
-                // Incorrect Flash
-                btnElement.classList.remove('border-stone-300');
                 btnElement.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
                 setTimeout(() => {
-                    btnElement.classList.add('border-stone-300');
                     btnElement.classList.remove('bg-red-100', 'border-red-500', 'text-red-700');
                 }, 400);
             }
@@ -572,16 +492,12 @@
         function handleTextInput(locId, val) {
             const loc = locations.find(l => l.id === locId);
             triggerSave(); 
-            
             if (!gameState['loc' + locId].q && loc.checkQ && loc.checkQ(val)) {
                 gameState['loc' + locId].q = true;
-                
                 const input = document.getElementById(`q-input-${locId}`);
                 input.value = loc.correctDisplay;
                 input.disabled = true;
-                input.classList.remove('bg-white', 'border-stone-300', 'text-stone-800');
                 input.classList.add('bg-green-100', 'border-green-600', 'text-green-800');
-                
                 updateProgress();
                 triggerSave();
             }
@@ -592,37 +508,27 @@
             for (let i = 1; i <= 4; i++) {
                 const loc = locations.find(l => l.id === i);
                 const numWords = loc.name.split(' ').length;
-                
                 if (gameState['loc' + i].foundWords.length === numWords) completed++;
                 if (gameState['loc' + i].q) completed++;
             }
-            
             document.getElementById('progress-text').innerText = `${completed} / ${TOTAL_STEPS}`;
-            
-            if (completed >= TOTAL_STEPS && !isSolved) {
-                triggerWin();
-            }
+            if (completed >= TOTAL_STEPS && !isSolved) triggerWin();
         }
 
         function triggerWin() {
             if (isSolved) return;
             isSolved = true;
-            
             const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
             const now = new Date();
-            
             window.stampData = {
                 studentName: studentName,
                 dateStr: now.toLocaleDateString(),
                 timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
-
             triggerWinUI();
             triggerSave();
-
-            const winModal = document.getElementById('win-modal');
             setTimeout(() => {
-                winModal.classList.remove('hidden');
+                document.getElementById('win-modal').classList.remove('hidden');
             }, 600);
         }
 
@@ -630,10 +536,8 @@
             const stampInstruction = document.getElementById('stamp-instruction');
             const stampBox = document.getElementById('stamp-box');
             const sData = window.stampData || { studentName: 'Anonymous', dateStr: '', timeStr: '' };
-
             stampInstruction.textContent = "Take a screenshot of this stamp to show staff!";
             stampBox.className = "min-h-[8rem] py-2 flex items-center justify-center font-bold tracking-widest transition-all duration-300 bg-red-50/50 border-4 border-red-200 overflow-hidden relative";
-            
             stampBox.innerHTML = `
                 <div class="text-red-600 border-4 border-red-600 px-4 py-2 transform -rotate-2 shadow-sm bg-white/95 backdrop-blur-sm text-center z-10 w-11/12 max-w-xs">
                     <div class="text-xl md:text-2xl font-black mb-1 leading-none">COMPLETE</div>
@@ -646,49 +550,12 @@
             `;
         }
 
-        function resetGame() {
-            gameState = {
-                loc1: { foundWords: [], q: false },
-                loc2: { foundWords: [], q: false },
-                loc3: { foundWords: [], q: false },
-                loc4: { foundWords: [], q: false }
-            };
-            isSolved = false;
-            window.stampData = null;
-            
-            try {
-                localStorage.removeItem('treasureHuntState');
-            } catch(e) {
-                console.error("Could not clear local storage:", e);
-            }
-
-            document.getElementById('student-name').value = '';
-            document.getElementById('school-name').value = '';
-
-            const secretContainer = document.getElementById('secret-word-container');
-            secretContainer.innerHTML = '';
-            
-            const stampInstruction = document.getElementById('stamp-instruction');
-            const stampBox = document.getElementById('stamp-box');
-            
-            stampInstruction.textContent = "Complete all locations to earn your stamp.";
-            stampBox.className = "min-h-[8rem] flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative";
-            stampBox.innerHTML = `<span id="stamp-content" class="text-stone-300 text-3xl">STAMP</span>`;
-            
-            initDOM();
-            updateProgress();
-        }
-
-        // Close Modal Event
         document.getElementById('close-modal-btn').addEventListener('click', () => {
             document.getElementById('win-modal').classList.add('hidden');
         });
 
-        // --- STARTUP ---
         initDOM();
         restoreGameState();
-        updateProgress();
-
     </script>
 </body>
 </html>
