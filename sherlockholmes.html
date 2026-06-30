@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sherlock Holmes - British Hills</title>
     
-    <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FontAwesome for Symbols/Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -30,7 +28,13 @@
 <body class="bg-[#fdfbf7] text-stone-800 p-4 md:p-8 overflow-x-hidden min-h-screen flex flex-col">
 
     <div class="max-w-[1000px] mx-auto w-full flex-1 flex flex-col">
-        <!-- Header -->
+        
+        <div class="pt-2 pb-4">
+            <a id="back-to-hub" href="index.html" class="inline-flex items-center gap-2 text-stone-500 hover:text-[#8b0000] font-bold uppercase tracking-widest text-sm transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> Back to Hub
+            </a>
+        </div>
+
         <div class="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 gap-6 border-b-2 border-stone-800">
             <div class="flex-1 text-center md:text-left">
                 <h1 class="text-3xl md:text-5xl font-bold uppercase tracking-wide mb-1 text-[#8b0000]">British Hills</h1>
@@ -60,7 +64,6 @@
             </div>
         </div>
 
-        <!-- Student Info -->
         <div class="bg-white border-2 border-stone-800 p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(44,30,22,1)] max-w-2xl mx-auto">
             <div class="flex-1 flex items-center gap-2">
                 <label for="student-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">Name:</label>
@@ -72,20 +75,16 @@
             </div>
         </div>
 
-        <!-- Part 1: The Clues -->
         <h3 class="text-2xl font-bold uppercase tracking-widest mb-6 text-stone-800 border-b-2 border-stone-200 pb-2">1. The Investigation</h3>
         
         <div class="grid grid-cols-1 gap-8 mb-12" id="questions-container">
-            <!-- Questions Injected Here -->
-        </div>
+            </div>
 
-        <!-- Part 2: Final Deductions -->
         <h3 class="text-2xl font-bold uppercase tracking-widest mb-6 text-stone-800 border-b-2 border-stone-200 pb-2">2. Final Deductions</h3>
         <p class="text-stone-600 mb-6 font-medium">Can you solve the mystery? Type your final answers below based on the clues you've gathered.</p>
 
         <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 space-y-8 mb-8">
             
-            <!-- Deduction 1 -->
             <div class="space-y-3">
                 <label class="font-bold text-lg text-[#8b0000]">Who stole the crown jewels?</label>
                 <div class="flex flex-col sm:flex-row items-center gap-4">
@@ -103,7 +102,6 @@
                 </div>
             </div>
 
-            <!-- Deduction 2 -->
             <div class="space-y-3">
                 <label class="font-bold text-lg text-[#8b0000]">Where did they first hide the crown jewels?</label>
                 <div class="relative w-full">
@@ -113,7 +111,6 @@
                 </div>
             </div>
 
-            <!-- Deduction 3 -->
             <div class="space-y-3">
                 <label class="font-bold text-lg text-[#8b0000]">Where are the crown jewels now?</label>
                 <div class="relative w-full">
@@ -125,7 +122,6 @@
 
         </div>
 
-        <!-- Evaluation Button -->
         <div class="text-center mb-12">
             <button onclick="evaluateCase()" class="text-xl bg-amber-500 hover:bg-amber-600 text-stone-900 font-black tracking-widest uppercase px-8 py-4 border-4 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_rgba(44,30,22,1)] transition-all duration-200">
                 <i class="fa-solid fa-magnifying-glass mr-2"></i> Evaluate Deductions
@@ -135,7 +131,6 @@
             </p>
         </div>
         
-        <!-- Stamp Area -->
         <div class="max-w-md mx-auto border-4 border-stone-800 p-6 text-center bg-white shadow-md mt-auto w-full">
             <p id="stamp-instruction" class="font-bold text-sm mb-4">Complete the investigation to earn your stamp.</p>
             <div id="stamp-box" class="min-h-[8rem] flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative">
@@ -144,7 +139,6 @@
         </div>
     </div>
 
-    <!-- Win Modal -->
     <div id="win-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 fade-in">
         <div class="bg-white p-8 md:p-12 max-w-xl w-full border-4 border-[#8b0000] text-center space-y-6 shadow-2xl">
             <h2 class="text-4xl md:text-5xl font-bold uppercase tracking-wider text-[#8b0000]">Case Closed!</h2>
@@ -160,8 +154,15 @@
         </div>
     </div>
 
-    <!-- Application Logic -->
     <script>
+        // URL Parameter carry-over for the Back Button
+        document.addEventListener("DOMContentLoaded", () => {
+            const backBtn = document.getElementById('back-to-hub');
+            if (backBtn) {
+                backBtn.href = 'index.html' + window.location.search;
+            }
+        });
+
         // --- DATA & VALIDATION ---
         
         const questions = [
@@ -237,7 +238,7 @@
                 if (q.image) {
                     html += `
                         <div class="shrink-0 mx-auto md:mx-0 w-32 h-32 md:w-40 md:h-40 border-4 border-stone-800 bg-stone-200 shadow-inner overflow-hidden -order-1 md:order-last">
-                            <img src="${q.image}" alt="Suspect" class="w-full h-full object-cover">
+                            <img src="${q.image}" alt="Suspect" class="w-full h-full object-cover" onerror="this.style.display='none'">
                         </div>
                     `;
                 }
@@ -382,6 +383,15 @@
         function evaluateCase() {
             if (isSolved) return;
 
+            // Enforce Name and School before claiming stamp
+            const studentName = document.getElementById('student-name').value.trim();
+            const schoolName = document.getElementById('school-name').value.trim();
+
+            if (!studentName || !schoolName) {
+                alert("Please enter your Name and School at the top of the page before evaluating your deductions!");
+                return;
+            }
+
             if (selections.q1 !== questions[0].correct) return triggerFail();
             if (selections.q2 !== questions[1].correct) return triggerFail();
             if (selections.q3 !== questions[2].correct) return triggerFail();
@@ -390,7 +400,7 @@
             const t1 = document.getElementById('deduce-thief-1').value.toLowerCase().replace(/[^a-z]/g, '');
             const t2 = document.getElementById('deduce-thief-2').value.toLowerCase().replace(/[^a-z]/g, '');
             
-            const hasDom = (t1.includes('dom') || t2.includes('dom'));
+            const hasDom = (t1.includes('dom') || t2.includes('dom') || t1.includes('donovan') || t2.includes('donovan'));
             const hasTom = (t1.includes('tom') || t2.includes('tom'));
             
             if (!hasDom || !hasTom) return triggerFail();
@@ -414,7 +424,7 @@
             if (isSolved) return;
             isSolved = true;
 
-            const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
+            const studentName = document.getElementById('student-name').value.trim();
             const now = new Date();
             
             window.stampData = {
