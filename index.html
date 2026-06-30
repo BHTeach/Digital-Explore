@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>British Hills Explore - Activity Hub</title>
     
-    <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FontAwesome for Symbols/Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -19,9 +17,6 @@
 </head>
 <body class="bg-[#fdfbf7] text-stone-800 min-h-screen flex flex-col p-4 md:p-8">
 
-    <!-- ========================================== -->
-    <!-- LOCK SCREEN (Default view without QR code) -->
-    <!-- ========================================== -->
     <div id="lock-screen" class="flex-1 flex flex-col items-center justify-center max-w-lg mx-auto w-full text-center fade-in">
         <div class="mb-8">
             <h1 class="text-5xl md:text-6xl font-bold uppercase tracking-widest text-[#8b0000] mb-2">British Hills</h1>
@@ -39,21 +34,15 @@
         </button>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MAIN HUB CONTENT (Hidden by default)       -->
-    <!-- ========================================== -->
     <div id="main-content" class="max-w-5xl mx-auto w-full flex-1 flex flex-col hidden fade-in">
         
-        <!-- Header -->
         <div class="text-center mb-12 border-b-4 border-[#8b0000] pb-8 pt-4">
             <h1 class="text-4xl md:text-6xl font-bold uppercase tracking-widest text-[#8b0000] mb-2">British Hills</h1>
             <h2 id="hub-subtitle" class="text-2xl md:text-3xl font-light tracking-[0.1em] text-stone-600 uppercase">Activity Hub</h2>
         </div>
 
-        <!-- Activity Sections -->
         <div class="space-y-16 flex-1">
             
-            <!-- BEGINNER TIER -->
             <section id="tier-beginner">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">Beginner</h3>
@@ -78,7 +67,6 @@
                 </div>
             </section>
 
-            <!-- PRE-INTERMEDIATE TIER -->
             <section id="tier-preint">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">Pre-Intermediate</h3>
@@ -103,7 +91,6 @@
                 </div>
             </section>
 
-            <!-- INTERMEDIATE TIER -->
             <section id="tier-int">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">Intermediate</h3>
@@ -128,7 +115,6 @@
                 </div>
             </section>
 
-            <!-- ADVANCED TIER -->
             <section id="tier-adv">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">Advanced</h3>
@@ -153,7 +139,6 @@
                 </div>
             </section>
 
-            <!-- NEW TIER -->
             <section id="tier-new">
                 <div class="flex items-center gap-4 mb-6">
                     <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800">New</h3>
@@ -172,9 +157,14 @@
             </section>
 
         </div>
+
+        <div class="mt-12 mb-8 text-center border-t-2 border-stone-200 pt-8">
+            <button onclick="resetAllProgress()" class="text-sm bg-stone-200 hover:bg-stone-300 text-stone-600 font-bold tracking-widest uppercase px-6 py-3 transition-colors rounded shadow-sm">
+                <i class="fa-solid fa-rotate-right mr-2"></i> Reset All Progress
+            </button>
+        </div>
     </div>
 
-    <!-- Smart Hub Logic -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -196,12 +186,14 @@
                 allLinks.forEach(link => {
                     if (!allowedActs.includes(link.dataset.act)) {
                         link.style.display = 'none'; // Hide unselected activities
+                    } else {
+                        // NEW: Append the query string to the activity link so the "Back" button on the next page knows the routing parameters
+                        link.href = link.getAttribute('href') + window.location.search;
                     }
                 });
 
-                // Hide empty tier sections (e.g. if no "Advanced" activities were selected, hide the "Advanced" header)
+                // Hide empty tier sections
                 document.querySelectorAll('section').forEach(sec => {
-                    // Check if there are any visible links left in this section
                     const visibleLinks = Array.from(sec.querySelectorAll('a[data-act]')).filter(l => l.style.display !== 'none');
                     if (visibleLinks.length === 0) {
                         sec.style.display = 'none';
@@ -219,10 +211,24 @@
                 document.getElementById('hub-subtitle').innerText = "Full Activity Hub (Staff Mode)";
                 
                 // Ensure all links and sections are visible in Staff Mode
-                document.querySelectorAll('a[data-act]').forEach(link => link.style.display = 'block');
+                document.querySelectorAll('a[data-act]').forEach(link => {
+                    link.style.display = 'block';
+                    // Pass a dummy staff param just in case
+                    link.href = link.getAttribute('href') + "?school=Staff&acts=all";
+                });
                 document.querySelectorAll('section').forEach(sec => sec.style.display = 'block');
             } else if (pass !== null) {
                 alert("Incorrect password.");
+            }
+        }
+
+        // NEW: Reset All Progress Function
+        function resetAllProgress() {
+            if (confirm("Are you sure you want to reset ALL your activity progress? This cannot be undone.")) {
+                // Clear all saved data in localStorage
+                localStorage.clear();
+                // Reload the page to reflect the reset state
+                window.location.reload();
             }
         }
     </script>
