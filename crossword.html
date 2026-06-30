@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>British Hills Crossword</title>
     
-    <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FontAwesome for Symbols/Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -27,7 +25,12 @@
     <input id="hidden-input" type="text" autocomplete="off" autocorrect="off" spellcheck="false" class="fixed -top-full -left-full opacity-0 pointer-events-none" value=" " />
 
     <div class="max-w-[1200px] mx-auto">
-        <!-- Header -->
+        <div class="mb-4">
+            <a id="back-to-hub" href="index.html" class="inline-flex items-center gap-2 text-gray-500 hover:text-black font-bold uppercase tracking-widest text-sm transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> Back to Hub
+            </a>
+        </div>
+
         <div class="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 gap-6 border-b-2 border-black">
             <div class="flex-1 text-center md:text-left">
                 <h1 class="text-3xl md:text-5xl font-bold uppercase tracking-wide mb-1">British Hills</h1>
@@ -43,7 +46,6 @@
             <p class="text-base text-gray-700 font-bold mt-2">Use letters from the spaces with the symbols to find the secret word.</p>
         </div>
 
-        <!-- Student Info -->
         <div class="bg-white border-2 border-black p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(0,0,0,1)] max-w-2xl mx-auto">
             <div class="flex-1 flex items-center gap-2">
                 <label for="student-name" class="font-bold uppercase tracking-wider text-gray-700 text-sm">Name:</label>
@@ -109,6 +111,14 @@
     </div>
 
     <script>
+        // Update back button with URL parameters
+        document.addEventListener("DOMContentLoaded", () => {
+            const backBtn = document.getElementById('back-to-hub');
+            if (backBtn) {
+                backBtn.href = 'index.html' + window.location.search;
+            }
+        });
+
         const ROWS = 12, COLS = 16;
         const words = [
             { id: 4, direction: 'across', text: "VICTORIANALLEY", row: 2, col: 0, clue: "Where can you buy souvenirs at British Hills?" },
@@ -230,8 +240,16 @@
         }
 
         function triggerWin() {
+            const studentName = document.getElementById('student-name').value.trim();
+            const schoolName = document.getElementById('school-name').value.trim();
+
+            if (!studentName || !schoolName) {
+                alert("Please enter your Name and School at the top of the page before claiming your stamp!");
+                return;
+            }
+
             isSolved = true; const now = new Date();
-            window.stampData = { studentName: document.getElementById('student-name').value || 'Anonymous', dateStr: now.toLocaleDateString(), timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+            window.stampData = { studentName: studentName, dateStr: now.toLocaleDateString(), timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
             triggerWinUI(); triggerSave(); setTimeout(() => document.getElementById('win-modal').classList.remove('hidden'), 600);
         }
 
