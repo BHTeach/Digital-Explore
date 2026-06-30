@@ -158,14 +158,117 @@
 
         </div>
 
-        <div class="mt-12 mb-8 text-center border-t-2 border-stone-200 pt-8">
-            <button onclick="resetAllProgress()" class="text-sm bg-stone-200 hover:bg-stone-300 text-stone-600 font-bold tracking-widest uppercase px-6 py-3 transition-colors rounded shadow-sm">
-                <i class="fa-solid fa-rotate-right mr-2"></i> Reset All Progress
-            </button>
+        <div class="mt-16 border-t-4 border-[#8b0000] pt-8 text-center space-y-8 pb-8">
+            
+            <div id="prize-section" class="bg-white border-4 border-stone-800 p-6 max-w-lg mx-auto shadow-[6px_6px_0px_rgba(44,30,22,1)] transition-all duration-300">
+                <h3 class="text-2xl font-bold uppercase tracking-widest text-stone-800 mb-2">Claim Prize</h3>
+                <p class="text-stone-600 mb-6 font-medium">Show your completed stamps to staff to get your prize!</p>
+                <button id="prize-btn" onclick="awardPrize()" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-900 font-black text-xl tracking-widest uppercase px-6 py-4 border-4 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_rgba(44,30,22,1)] transition-all duration-200">
+                    <i class="fa-solid fa-gift mr-2"></i> Mark Prize Awarded
+                </button>
+            </div>
+            
+            <div>
+                <button onclick="resetAllProgress()" class="text-sm bg-stone-200 hover:bg-stone-300 text-stone-600 font-bold tracking-widest uppercase px-6 py-3 transition-colors rounded shadow-sm border border-stone-300">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Reset All Progress
+                </button>
+            </div>
         </div>
+
     </div>
 
     <script>
+        // Map the data-act codes to their respective localStorage keys
+        const activityStorageKeys = {
+            'ws': 'bhWordSearchState',
+            'bhb': 'bhHeroesBegState',
+            'cw': 'bhCrosswordState',
+            'tp': 'treasureHuntState',
+            'bhi': 'bhHeroesState',
+            'hub': 'bhHubbubState',
+            'nc': 'bhNewtonsState',
+            'sh': 'sherlockHolmesState',
+            'scav': 'british_hills_scavenger_progress_v3' 
+        };
+
+        function checkCompletedActivities() {
+            const allLinks = document.querySelectorAll('a[data-act]');
+            
+            allLinks.forEach(link => {
+                const actCode = link.dataset.act;
+                const storageKey = activityStorageKeys[actCode];
+                
+                if (storageKey) {
+                    const savedData = localStorage.getItem(storageKey);
+                    let isCompleted = false;
+                    
+                    if (savedData) {
+                        try {
+                            const parsedData = JSON.parse(savedData);
+                            
+                            // The Scavenger Hunt saves an array of completed indices (total 8)
+                            if (actCode === 'scav') {
+                                if (Array.isArray(parsedData) && parsedData.length === 8) {
+                                    isCompleted = true;
+                                }
+                            } else {
+                                // All other activities use either isSolved or isApproved
+                                if (parsedData.isSolved === true || parsedData.isApproved === true) {
+                                    isCompleted = true;
+                                }
+                            }
+                        } catch(e) {
+                            console.error("Error parsing state for", actCode);
+                        }
+                    }
+                    
+                    if (isCompleted) {
+                        // Make sure the link can hold absolute positioned children
+                        link.classList.add('relative', 'overflow-hidden');
+                        
+                        // Inject the stamp HTML if it doesn't already have one
+                        if (!link.querySelector('.completed-stamp-overlay')) {
+                            const stampHTML = `
+                                <div class="completed-stamp-overlay absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center z-10 transition-all">
+                                    <div class="text-green-600 border-4 border-green-600 px-4 py-2 transform -rotate-12 bg-white/95 shadow-xl text-center font-black tracking-widest uppercase text-xl">
+                                        Completed
+                                    </div>
+                                </div>
+                            `;
+                            link.insertAdjacentHTML('beforeend', stampHTML);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Handle the visual state of the Prize Awarded button
+        function checkPrizeState() {
+            const isAwarded = localStorage.getItem('bhPrizeAwarded');
+            const prizeBtn = document.getElementById('prize-btn');
+            
+            if (isAwarded === 'true' && prizeBtn) {
+                prizeBtn.disabled = true;
+                prizeBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600', 'hover:-translate-y-1', 'hover:shadow-[6px_6px_0px_rgba(44,30,22,1)]', 'text-stone-900', 'border-stone-800');
+                prizeBtn.classList.add('bg-stone-100', 'text-stone-400', 'border-stone-300', 'shadow-inner');
+                prizeBtn.innerHTML = '<i class="fa-solid fa-check-double mr-2"></i> Prize Already Claimed';
+            }
+        }
+
+        function awardPrize() {
+            const pass = prompt("Staff Password Required to Award Prize:");
+            if (pass === null) return; // cancelled
+            if (pass.toLowerCase() !== 'bh') {
+                alert("Incorrect password.");
+                return;
+            }
+
+            if (confirm("Are you sure you want to mark the prize as awarded? This will prevent it from being claimed again by this device.")) {
+                localStorage.setItem('bhPrizeAwarded', 'true');
+                checkPrizeState();
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
             const schoolName = urlParams.get('school');
@@ -187,7 +290,7 @@
                     if (!allowedActs.includes(link.dataset.act)) {
                         link.style.display = 'none'; // Hide unselected activities
                     } else {
-                        // NEW: Append the query string to the activity link so the "Back" button on the next page knows the routing parameters
+                        // Append the query string to the activity link so "Back" button works
                         link.href = link.getAttribute('href') + window.location.search;
                     }
                 });
@@ -199,35 +302,47 @@
                         sec.style.display = 'none';
                     }
                 });
+
+                // Check UI states
+                checkCompletedActivities();
+                checkPrizeState();
             }
         });
 
         // STAFF UNLOCK OVERRIDE
         function staffUnlock() {
             const pass = prompt("Enter Staff Password:");
-            if (pass === "BH") {
+            if (pass === "BH" || pass === "bh") {
                 document.getElementById('lock-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 document.getElementById('hub-subtitle').innerText = "Full Activity Hub (Staff Mode)";
                 
-                // Ensure all links and sections are visible in Staff Mode
                 document.querySelectorAll('a[data-act]').forEach(link => {
                     link.style.display = 'block';
-                    // Pass a dummy staff param just in case
-                    link.href = link.getAttribute('href') + "?school=Staff&acts=all";
+                    // Pass a dummy staff query string just in case they click into an activity
+                    link.href = link.getAttribute('href') + '?school=Staff&acts=all'; 
                 });
                 document.querySelectorAll('section').forEach(sec => sec.style.display = 'block');
+                
+                // Check UI states
+                checkCompletedActivities();
+                checkPrizeState();
             } else if (pass !== null) {
                 alert("Incorrect password.");
             }
         }
 
-        // NEW: Reset All Progress Function
+        // RESET PROGRESS BUTTON
         function resetAllProgress() {
-            if (confirm("Are you sure you want to reset ALL your activity progress? This cannot be undone.")) {
-                // Clear all saved data in localStorage
+            const pass = prompt("Enter Staff Password to confirm reset:");
+            if (pass === null) return; // cancelled
+            if (pass.toLowerCase() !== 'bh') {
+                alert("Incorrect password.");
+                return;
+            }
+
+            if (confirm("Are you sure you want to reset ALL activity progress and prize claims? This cannot be undone.")) {
                 localStorage.clear();
-                // Reload the page to reflect the reset state
                 window.location.reload();
             }
         }
