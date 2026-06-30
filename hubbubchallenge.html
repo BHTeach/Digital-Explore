@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hubbub Challenge - British Hills</title>
     
-    <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FontAwesome for Symbols/Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -32,7 +30,11 @@
 <body class="bg-[#fdfbf7] text-stone-800 p-4 md:p-8 overflow-x-hidden min-h-screen flex flex-col">
 
     <div class="max-w-[1000px] mx-auto w-full flex-1 flex flex-col">
-        <!-- Header -->
+        
+        <a id="back-to-hub" href="index.html" class="inline-flex items-center gap-2 text-stone-500 hover:text-[#8b0000] font-bold uppercase tracking-widest text-sm mb-4 transition-colors">
+            <i class="fa-solid fa-arrow-left"></i> Back to Hub
+        </a>
+
         <div class="flex flex-col md:flex-row items-center justify-between mb-8 pb-4 gap-6 border-b-2 border-stone-800">
             <div class="flex-1 text-center md:text-left">
                 <h1 class="text-3xl md:text-5xl font-bold uppercase tracking-wide mb-1 text-[#8b0000]">British Hills</h1>
@@ -42,8 +44,7 @@
             </div>
             
             <div class="flex-1 w-full max-w-sm flex flex-col items-center md:items-end justify-center space-y-3">
-                <!-- Reset Button Removed -->
-            </div>
+                </div>
         </div>
 
         <div class="bg-white border-4 border-stone-800 p-6 md:p-8 shadow-[6px_6px_0px_rgba(44,30,22,1)] mb-12 flex flex-col md:flex-row items-center gap-8">
@@ -58,7 +59,6 @@
             </div>
         </div>
 
-        <!-- Student Info -->
         <div class="bg-white border-2 border-stone-800 p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-[4px_4px_0px_rgba(44,30,22,1)] max-w-2xl mx-auto">
             <div class="flex-1 flex items-center gap-2">
                 <label for="student-name" class="font-bold uppercase tracking-wider text-stone-600 text-sm">Name:</label>
@@ -70,7 +70,6 @@
             </div>
         </div>
 
-        <!-- Part 1: Meet the Teacher -->
         <h3 class="text-2xl font-bold uppercase tracking-widest mb-4 text-stone-800 border-b-2 border-stone-200 pb-2">1. Meet the Teacher</h3>
         <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 mb-10 space-y-6">
             
@@ -89,7 +88,6 @@
 
         </div>
 
-        <!-- Part 2: Fill in the Blanks -->
         <h3 class="text-2xl font-bold uppercase tracking-widest mb-4 text-stone-800 border-b-2 border-stone-200 pb-2">2. Fill in the Blanks</h3>
         <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 mb-10">
             <div class="space-y-4 max-w-2xl">
@@ -101,7 +99,6 @@
             </div>
         </div>
 
-        <!-- Part 3: To-Do List -->
         <h3 class="text-2xl font-bold uppercase tracking-widest mb-4 text-stone-800 border-b-2 border-stone-200 pb-2">3. British Hills To-Do List</h3>
         <div class="bg-white border-2 border-stone-800 shadow-[4px_4px_0px_rgba(44,30,22,1)] p-6 md:p-8 mb-12">
             <p class="text-stone-600 mb-6 font-medium">Complete <strong class="text-[#8b0000]">two or more</strong> things on the list.</p>
@@ -130,7 +127,6 @@
             </div>
         </div>
 
-        <!-- Call to Action / Staff Trigger -->
         <div class="text-center mb-12" id="action-area">
             <h3 class="text-2xl font-bold text-[#8b0000] mb-4">Finished?</h3>
             <p class="text-lg font-medium text-stone-700 mb-8">Now find a British Hills staff member to check your answers!</p>
@@ -140,7 +136,6 @@
             </button>
         </div>
         
-        <!-- Stamp Area -->
         <div class="max-w-md mx-auto border-4 border-stone-800 p-6 text-center bg-white shadow-md mt-auto w-full">
             <p id="stamp-instruction" class="font-bold text-sm mb-4">Get staff approval to earn your stamp.</p>
             <div id="stamp-box" class="min-h-[8rem] flex items-center justify-center font-bold tracking-widest transition-all duration-300 border-2 border-dashed border-stone-300 bg-stone-50 overflow-hidden relative">
@@ -149,7 +144,6 @@
         </div>
     </div>
 
-    <!-- Staff Verification Modal -->
     <div id="staff-modal" class="hidden fixed inset-0 bg-stone-900/90 backdrop-blur-sm flex items-center justify-center p-4 z-50 fade-in">
         <div class="bg-white p-6 md:p-8 max-w-2xl w-full border-4 border-stone-800 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
             
@@ -159,27 +153,22 @@
             </div>
             
             <div class="space-y-6">
-                <!-- Teacher Summary -->
                 <div class="bg-stone-50 p-4 border border-stone-300">
                     <h3 class="font-bold text-xs uppercase text-stone-500 tracking-widest mb-2">1. Teacher Details</h3>
                     <p class="text-lg"><strong>Name:</strong> <span id="summary-teacher" class="text-[#8b0000] font-medium"></span></p>
                     <p class="text-lg"><strong>From:</strong> <span id="summary-location" class="text-stone-700 font-medium"></span></p>
                 </div>
 
-                <!-- Blanks Summary -->
                 <div class="bg-stone-50 p-4 border border-stone-300">
                     <h3 class="font-bold text-xs uppercase text-stone-500 tracking-widest mb-2">2. Fill in the Blanks</h3>
                     <ul class="space-y-1 text-lg font-medium text-stone-800" id="summary-blanks">
-                        <!-- Injected -->
-                    </ul>
+                        </ul>
                 </div>
 
-                <!-- To-Do Summary -->
                 <div class="bg-stone-50 p-4 border border-stone-300">
                     <h3 class="font-bold text-xs uppercase text-stone-500 tracking-widest mb-2">3. To-Do List</h3>
                     <ul class="space-y-2 text-lg text-stone-800" id="summary-todos">
-                        <!-- Injected -->
-                    </ul>
+                        </ul>
                 </div>
             </div>
 
@@ -194,7 +183,6 @@
         </div>
     </div>
 
-    <!-- Win Modal -->
     <div id="win-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 fade-in">
         <div class="bg-white p-8 md:p-12 max-w-xl w-full border-4 border-[#8b0000] text-center space-y-6 shadow-2xl">
             <h2 class="text-4xl md:text-5xl font-bold uppercase tracking-wider text-[#8b0000]">Approved!</h2>
@@ -210,7 +198,6 @@
         </div>
     </div>
 
-    <!-- Application Logic -->
     <script>
         const staffModal = document.getElementById('staff-modal');
         const winModal = document.getElementById('win-modal');
@@ -220,6 +207,14 @@
         let isRestoring = false;
         window.stampData = null;
         let saveTimeout;
+
+        // Ensure "Back to Hub" retains parameters
+        document.addEventListener("DOMContentLoaded", () => {
+            const backBtn = document.getElementById('back-to-hub');
+            if (backBtn) {
+                backBtn.href = 'index.html' + window.location.search;
+            }
+        });
 
         function triggerSave() {
             if (isRestoring) return;
@@ -382,8 +377,24 @@
         }
 
         function approveWork() {
+            const studentName = document.getElementById('student-name').value.trim();
+            const schoolName = document.getElementById('school-name').value.trim();
+
+            if (!studentName || !schoolName) {
+                alert("Please ensure the student's Name and School are entered at the top of the page before approving.");
+                closeStaffModal();
+                return;
+            }
+
+            // Password check added here
+            const pass = prompt("Enter Staff Password to Approve:");
+            if (pass === null) return; // Action cancelled
+            if (pass.toLowerCase() !== "bh") {
+                alert("Incorrect password.");
+                return;
+            }
+
             isApproved = true;
-            const studentName = document.getElementById('student-name').value.trim() || 'Anonymous';
             const now = new Date();
             
             window.stampData = {
