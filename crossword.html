@@ -305,6 +305,42 @@
             checkWinCondition();
         }
 
+        function advanceToNextCell() {
+            if (!selectedCell) return;
+            let { r, c } = selectedCell;
+            if (direction === 'across') {
+                c++;
+                if (c < COLS && !grid[r][c].isBlack) {
+                    selectedCell = { r, c };
+                    focusCellInput(r, c);
+                }
+            } else {
+                r++;
+                if (r < ROWS && !grid[r][c].isBlack) {
+                    selectedCell = { r, c };
+                    focusCellInput(r, c);
+                }
+            }
+        }
+
+        function moveToPreviousCell() {
+            if (!selectedCell) return;
+            let { r, c } = selectedCell;
+            if (direction === 'across') {
+                c--;
+                if (c >= 0 && !grid[r][c].isBlack) {
+                    selectedCell = { r, c };
+                    focusCellInput(r, c);
+                }
+            } else {
+                r--;
+                if (r >= 0 && !grid[r][c].isBlack) {
+                    selectedCell = { r, c };
+                    focusCellInput(r, c);
+                }
+            }
+        }
+
         // Catch pure desktop keydown events
         window.addEventListener('keydown', (e) => {
             // Guard: If the user is currently typing inside the actual Name or School inputs, do NOT trigger crossword keys.
@@ -315,12 +351,17 @@
             if (!selectedCell || isSolved) return;
             
             if (e.key === 'Backspace') { 
-                grid[selectedCell.r][selectedCell.c].value = ''; 
+                if (grid[selectedCell.r][selectedCell.c].value === '') {
+                    moveToPreviousCell();
+                } else {
+                    grid[selectedCell.r][selectedCell.c].value = ''; 
+                }
                 updateUI(); 
                 triggerSave(); 
             }
             else if (/^[a-zA-Z]$/.test(e.key)) { 
                 grid[selectedCell.r][selectedCell.c].value = e.key.toUpperCase(); 
+                advanceToNextCell();
                 updateUI(); 
                 triggerSave(); 
             }
@@ -337,13 +378,18 @@
             
             // Check for Mobile Backspace
             if (val.length === 0) {
-                grid[selectedCell.r][selectedCell.c].value = '';
+                if (grid[selectedCell.r][selectedCell.c].value === '') {
+                    moveToPreviousCell();
+                } else {
+                    grid[selectedCell.r][selectedCell.c].value = '';
+                }
             } 
             // Check for Typed Character
             else if (val.length >= 1) {
                 const char = val.slice(-1).toUpperCase();
                 if (/^[A-Z]$/.test(char)) {
                     grid[selectedCell.r][selectedCell.c].value = char;
+                    advanceToNextCell();
                 }
             }
             
