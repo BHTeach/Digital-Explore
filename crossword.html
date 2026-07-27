@@ -288,6 +288,9 @@
                 direction = direction === 'across' ? 'down' : 'across';
             } else {
                 selectedCell = { r, c };
+                // Automatically set direction based on what words this cell belongs to
+                if (grid[r][c].acrossWord && !grid[r][c].downWord) direction = 'across';
+                else if (grid[r][c].downWord && !grid[r][c].acrossWord) direction = 'down';
             }
             updateUI(); 
             focusCellInput(r, c);
@@ -351,6 +354,7 @@
             if (!selectedCell || isSolved) return;
             
             if (e.key === 'Backspace') { 
+                e.preventDefault(); // Stop mobile/desktop dual-firing
                 if (grid[selectedCell.r][selectedCell.c].value === '') {
                     moveToPreviousCell();
                 } else {
@@ -359,7 +363,16 @@
                 updateUI(); 
                 triggerSave(); 
             }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); direction = 'across'; advanceToNextCell(); updateUI(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); direction = 'across'; moveToPreviousCell(); updateUI(); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); direction = 'down'; advanceToNextCell(); updateUI(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); direction = 'down'; moveToPreviousCell(); updateUI(); }
             else if (/^[a-zA-Z]$/.test(e.key)) { 
+                // Fix for double-typing: If the hidden input is focused, let the mobile 'input' event handle it instead!
+                if (document.activeElement && document.activeElement.id === 'hidden-input') {
+                    return; 
+                }
+                e.preventDefault(); // Fallback for desktop if input somehow lost focus
                 grid[selectedCell.r][selectedCell.c].value = e.key.toUpperCase(); 
                 advanceToNextCell();
                 updateUI(); 
